@@ -1,13 +1,13 @@
-use spaceautomats::{self, Spaceautomats};
+use spaceautomats::{self, Simulation};
 
 #[test]
 fn it_loads_and_releases() {
-    let mut sa = Spaceautomats::new();
+    let mut sa = Simulation::new();
     
-    let automat = "Automat 1".to_string();
+    let automat = "print('hello world!')".to_string();
     sa.load_automat(automat);
 
-    let automat = "Automat 2".to_string();
+    let automat = "print('hello world!')".to_string();
     sa.load_automat(automat);
 
     assert!(2 == sa.count());
