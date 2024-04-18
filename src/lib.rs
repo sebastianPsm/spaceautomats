@@ -1,5 +1,7 @@
 mod spaceautomat;
 
+use spaceautomat::ReturnCode;
+
 use crate::spaceautomat::Spaceautomat;
 
 pub struct Simulation {
@@ -19,8 +21,10 @@ impl Simulation {
     }
     pub fn load_automat(&mut self, code: &String) {
         let mut sa = Spaceautomat::new();
-        sa.load_code(code);
-        self.automats.push(sa);
+        let rc = sa.load_code(code);
+        if matches!(rc, ReturnCode::Ok) {
+            self.automats.push(sa);
+        }
     }
     pub fn count(&self) -> usize {
         return self.automats.len();

@@ -1,9 +1,16 @@
+use lua::ThreadStatus;
+
 extern crate lua;
 
 //use std::{fs::File, io::Read};
 
 pub struct Spaceautomat {
     state: lua::State
+}
+
+pub enum ReturnCode {
+    Ok,
+    SyntaxError
 }
 
 impl Spaceautomat {
@@ -14,9 +21,15 @@ impl Spaceautomat {
             state: state,
         }
     }
-    pub fn load_code(&mut self, code: &String) {
+    pub fn load_code(&mut self, code: &String) -> ReturnCode{
         let rc = self.state.load_string(code);
-        
+        if matches!(rc, ThreadStatus::SyntaxError) {
+            return ReturnCode::SyntaxError;
+        }
+        let lua_init_fcn = self.state.get_global("init");
+        let lua_run_fcn = self.state.get_global("run");
+
+        return ReturnCode::Ok;
     }
 }
 
