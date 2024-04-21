@@ -10,57 +10,54 @@ pub struct Spaceautomat {
 
 pub enum ReturnCode {
     Ok,
-    SyntaxError
+    SyntaxError,
+    InitFcnMissing,
+    RunFcnMissing,
 }
 
 impl Spaceautomat {
     pub fn new() -> Spaceautomat {
-        let mut state = lua::State::new();
+        let state = lua::State::new();
 
         Spaceautomat {
             state: state,
         }
     }
-    pub fn load_code(&mut self, code: &String) -> ReturnCode{
+    /// Load Lua code and checks if init() and run() are available
+    pub fn load_code(&mut self, code: &String) -> ReturnCode {
+        /*
+         * Load code string
+         */
         let rc = self.state.load_string(code);
         if matches!(rc, ThreadStatus::SyntaxError) {
             return ReturnCode::SyntaxError;
         }
+
+        /*
+         * Check fir init() and run()
+         */
+        let _ = self.state.pcall(0, 0, 0);
+
         let lua_init_fcn = self.state.get_global("init");
+        if lua_init_fcn == lua::Type::Nil {
+            return ReturnCode::InitFcnMissing;
+        }
+        let info = self.state.get_info(">Snu").unwrap();
+        println!("info():{} nparams: {}, nups: {}", info.linedefined, info.nparams, info.nups);
+        self.state.pop(1);
+
         let lua_run_fcn = self.state.get_global("run");
+        if lua_run_fcn == lua::Type::Nil {
+            return ReturnCode::RunFcnMissing;
+        }
+        let info = self.state.get_info(">Snu").unwrap();
+        println!("info():{} nparams: {}, nups: {}", info.linedefined, info.nparams, info.nups);
+        self.state.pop(1);
 
         return ReturnCode::Ok;
     }
+    /// Calls the init()-function from the loaded code to configure the space automat
+    pub fn init(&mut self) {
+        
+    }
 }
-
-
-//pub fn init() {
-//    let mut state = lua::State::new();
-//    state.open_libs();
-//    let _ = state.do_string("print('hello world!')");
-//}
-
-//extern crate argparse;
-//
-//use argparse::{ArgumentParser, StoreTrue, List};
-//use crate::spac;
-//
-//fn main() {
-//    let mut verbose = false;
-//    let mut automats: Vec<String> = vec![];
-//
-//    {
-//        let mut ap = ArgumentParser::new();
-//        ap.set_description("Space automats runtime");
-//        ap.refer(&mut verbose).add_option(&["-v", "--verbose"], StoreTrue, "Be verbose");
-//        ap.refer(&mut automats).add_option(&["-a", "--automat"], List, "List of automat files");
-//        ap.parse_args_or_exit();
-//    }
-//
-//    for automat in automats {
-//        let mut f = File::open(automat);
-//        
-//        space
-//
-//    }
-//}

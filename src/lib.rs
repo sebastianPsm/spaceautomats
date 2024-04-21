@@ -29,4 +29,7 @@ impl Simulation {
     pub fn count(&self) -> usize {
         return self.automats.len();
     }
+    pub fn init(&mut self) {
+        self.automats.iter_mut().for_each(|ele| ele.init());
+    }
 }
