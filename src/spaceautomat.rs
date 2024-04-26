@@ -1,11 +1,8 @@
-use lua::ThreadStatus;
-
-extern crate lua;
-
-//use std::{fs::File, io::Read};
+use mlua::{Function, Lua};
 
 pub struct Spaceautomat {
-    state: lua::State
+    lua: Lua,
+    initialized: bool,
 }
 
 pub enum ReturnCode {
@@ -13,14 +10,16 @@ pub enum ReturnCode {
     SyntaxError,
     InitFcnMissing,
     RunFcnMissing,
+    InitFcnCall,
 }
 
 impl Spaceautomat {
     pub fn new() -> Spaceautomat {
-        let state = lua::State::new();
+        let lua = Lua::new();
 
         Spaceautomat {
-            state: state,
+            lua,
+            initialized: false,
         }
     }
     /// Load Lua code and checks if init() and run() are available
@@ -28,36 +27,34 @@ impl Spaceautomat {
         /*
          * Load code string
          */
-        let rc = self.state.load_string(code);
-        if matches!(rc, ThreadStatus::SyntaxError) {
+        if(self.lua.load(code).exec().is_err()) {
             return ReturnCode::SyntaxError;
-        }
+        };
 
         /*
-         * Check fir init() and run()
+         * Check first init() and run()
          */
-        let _ = self.state.pcall(0, 0, 0);
-
-        let lua_init_fcn = self.state.get_global("init");
-        if lua_init_fcn == lua::Type::Nil {
+        let globals = self.lua.globals();
+        if globals.contains_key("init").is_err() {
             return ReturnCode::InitFcnMissing;
         }
-        let info = self.state.get_info(">Snu").unwrap();
-        println!("info():{} nparams: {}, nups: {}", info.linedefined, info.nparams, info.nups);
-        self.state.pop(1);
-
-        let lua_run_fcn = self.state.get_global("run");
-        if lua_run_fcn == lua::Type::Nil {
+        if !globals.contains_key("run").is_err() {
             return ReturnCode::RunFcnMissing;
         }
-        let info = self.state.get_info(">Snu").unwrap();
-        println!("info():{} nparams: {}, nups: {}", info.linedefined, info.nparams, info.nups);
-        self.state.pop(1);
 
         return ReturnCode::Ok;
     }
     /// Calls the init()-function from the loaded code to configure the space automat
-    pub fn init(&mut self) {
-        
+    pub fn init(&mut self) -> ReturnCode {
+        let globals = self.lua.globals();
+        let init_fcn = globals.get::<_, Function>("init").unwrap();
+
+        let _ = init_fcn.call::<_, u8>(0);
+        self.initialized = true;
+        return ReturnCode::Ok;
+    }
+    /// Returns the initialization state
+    pub fn is_initialized(&self) -> bool {
+        return self.initialized;
     }
 }

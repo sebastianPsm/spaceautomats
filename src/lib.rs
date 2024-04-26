@@ -14,11 +14,6 @@ impl Simulation {
             automats: Vec::new()
         }
     }
-    pub fn term(&mut self) {
-        while !self.automats.is_empty() {
-            self.automats.pop();
-        }
-    }
     pub fn load_automat(&mut self, code: &String) {
         let mut sa = Spaceautomat::new();
         let rc = sa.load_code(code);
@@ -26,10 +21,22 @@ impl Simulation {
             self.automats.push(sa);
         }
     }
-    pub fn count(&self) -> usize {
+    pub fn count_automats(&self) -> usize {
         return self.automats.len();
     }
     pub fn init(&mut self) {
-        self.automats.iter_mut().for_each(|ele| ele.init());
+        self.automats.iter_mut().for_each(|ele| { 
+            ele.init(); 
+        });
     }
+    pub fn count_initialized(&self) -> usize {
+        let mut result = 0;
+
+        self.automats.iter().for_each(|ele| { 
+            result += if ele.is_initialized() { 1 } else { 0 };
+        });
+
+        return result;
+    }
+
 }

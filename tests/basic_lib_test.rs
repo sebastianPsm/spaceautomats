@@ -13,9 +13,8 @@ fn it_loads_and_releases() {
     let automat = std::fs::read_to_string("tests/myautomat.lua").expect("Wasn't possible to load tests/myautomat.lua");
     sa.load_automat(&automat);
 
-    assert!(1 == sa.count());
+    assert!(1 == sa.count_automats());
 
-    sa.term();
 }
 
 #[test]
@@ -27,9 +26,9 @@ fn it_loads_20_space_automats_and_starts_the_simulation() {
     for _idx in 1..11 {
         sa.load_automat(&automat);
     }
-    assert!(10 == sa.count());
-
+    assert!(10 == sa.count_automats());
     
+    sa.init();
+    assert!(10 == sa.count_initialized());    
 
-    sa.term();
 }
