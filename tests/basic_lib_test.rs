@@ -1,7 +1,7 @@
 use spaceautomats_simulation::{Simulation};
 
 #[test]
-fn it_loads_and_releases() {
+fn load_and_release() {
     let mut sa = Simulation::new();
     
     let automat = "print('hello world!')".to_string();
@@ -16,9 +16,8 @@ fn it_loads_and_releases() {
     assert!(1 == sa.count_automats());
 
 }
-
 #[test]
-fn it_loads_20_space_automats_and_starts_the_simulation() {
+fn load_20_space_automats_and_initialize() {
     let mut sa = Simulation::new();
 
     let automat = std::fs::read_to_string("tests/myautomat.lua").expect("Wasn't possible to load test/myautomat.lua");
@@ -29,6 +28,27 @@ fn it_loads_20_space_automats_and_starts_the_simulation() {
     assert!(10 == sa.count_automats());
     
     sa.init();
-    assert!(10 == sa.count_initialized());    
+    assert!(10 == sa.count_initialized());
+}
+#[test]
+fn load_space_automats_intialize_and_run_simulation() {
+    let mut sa = Simulation::new();
 
+    let automat = std::fs::read_to_string("tests/myautomat.lua").expect("Wasn't possible to load test/myautomat.lua");
+    sa.load_automat(&automat);
+    sa.load_automat(&automat);
+    sa.load_automat(&automat);
+    assert!(3 == sa.count_automats());
+
+    sa.init();
+    assert!(3 == sa.count_initialized());
+
+    sa.step();
+    sa.step();
+    sa.step();
+
+    let step_counts = sa.count_steps();
+    assert!(step_counts[1] == 3);
+    assert!(step_counts[2] == 3);
+    assert!(step_counts[3] == 3);
 }

@@ -38,5 +38,19 @@ impl Simulation {
 
         return result;
     }
+    pub fn step(&mut self) {
+        self.automats.iter_mut().for_each(|ele| {
+            if !ele.is_initialized() { return; }
+            ele.step();
+        });
+    }
+    pub fn count_steps(&self) -> Vec<u64> {
+        let mut result: Vec<u64> = Vec::new();
+        
+        self.automats.iter().for_each(|ele| {
+            result.push(ele.get_step_count());
+        });
 
+        return result;
+    }
 }
