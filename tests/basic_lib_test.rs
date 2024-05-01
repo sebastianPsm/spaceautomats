@@ -48,7 +48,7 @@ fn load_space_automats_intialize_and_run_simulation() {
     sa.step();
 
     let step_counts = sa.count_steps();
+    assert!(step_counts[0] == 3);
     assert!(step_counts[1] == 3);
     assert!(step_counts[2] == 3);
-    assert!(step_counts[3] == 3);
 }
