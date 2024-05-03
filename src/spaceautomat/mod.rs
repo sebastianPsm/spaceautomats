@@ -1,12 +1,13 @@
-use mlua::{Function, Lua, UserData, UserDataMethods};
+mod ship;
+
+use mlua::{Function, Lua};
+
+use crate::spaceautomat::ship::Ship;
 
 pub struct Spaceautomat {
     lua: Lua,
     initialized: bool,
     step_count: u64,
-}
-struct Ship {
-    a: i64,
 }
 
 pub enum ReturnCode {
@@ -54,19 +55,7 @@ impl Spaceautomat {
         /*
          * Add ship api
          */
-        impl UserData for Ship {
-            fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
-                methods.add_method_mut("slot", |_, ship, slot_idx: i64| {
-                    // Todo: Add pheriphery to slot logic here
-                    ship.a = slot_idx;
-
-                    Ok(())
-                });
-            }
-        }
-        let _ = globals.set("ship", Ship {
-            a: 0,
-        });
+        globals.set("ship", Ship::new()).unwrap();
 
         return ReturnCode::Ok;
     }
@@ -75,7 +64,8 @@ impl Spaceautomat {
         let globals = self.lua.globals();
         let init_fcn = globals.get::<_, Function>("init").unwrap();
 
-        if init_fcn.call::<_, bool>(true).is_err() {
+        let res = init_fcn.call::<_, bool>(true);
+        if res.is_err() {
             return ReturnCode::InitFcnCall;
         }
         self.initialized = true;
