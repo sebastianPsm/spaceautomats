@@ -1,13 +1,16 @@
 mod ship;
+mod device;
+mod dev_propulsion;
 
 use mlua::{Function, Lua};
-
 use crate::spaceautomat::ship::Ship;
+
+use self::ship::State;
 
 pub struct Spaceautomat {
     lua: Lua,
-    initialized: bool,
     step_count: u64,
+    ship: Ship,
 }
 
 pub enum ReturnCode {
@@ -25,8 +28,8 @@ impl Spaceautomat {
 
         Spaceautomat {
             lua,
-            initialized: false,
-            step_count: 0
+            step_count: 0,
+            ship: Ship::new(),
         }
     }
     /// Load Lua code and checks if init() and run() are available
@@ -52,28 +55,39 @@ impl Spaceautomat {
             return ReturnCode::RunFcnMissing;
         }
 
-        /*
-         * Add ship api
-         */
-        globals.set("ship", Ship::new()).unwrap();
-
         return ReturnCode::Ok;
     }
     /// Calls the init()-function from the loaded code to configure the space automat
     pub fn init(&mut self) -> ReturnCode {
-        let globals = self.lua.globals();
-        let init_fcn = globals.get::<_, Function>("init").unwrap();
+        
+        let result = self.lua.scope(|scope| {
+            let globals = self.lua.globals();
 
-        let res = init_fcn.call::<_, bool>(true);
-        if res.is_err() {
+            let ship_userdata = scope.create_userdata_ref_mut(&mut self.ship).unwrap();
+            globals.set("ship", ship_userdata).unwrap();
+
+            let init_fcn = globals.get::<_, Function>("init").unwrap();
+            let res = init_fcn.call::<_, bool>(true);
+            if res.is_err() {
+                return res;
+            }
+            return res;
+        });
+        
+        if result.is_err() {
             return ReturnCode::InitFcnCall;
         }
-        self.initialized = true;
+
+        self.ship.set_state(ship::State::Run);
         return ReturnCode::Ok;
     }
     /// Returns the initialization state
-    pub fn is_initialized(&self) -> bool {
-        return self.initialized;
+    pub fn is_initialized(self) -> bool {
+        //match self.ship.get_state() {
+        //    State::Init => false,
+        //    State::Run => true
+        //}
+        true
     }
     /// Calls the run()-function from the loaded code once
     pub fn step(&mut self) -> ReturnCode {
