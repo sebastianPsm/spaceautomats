@@ -4,7 +4,6 @@ mod dev_propulsion;
 
 use mlua::{Function, Lua};
 use crate::spaceautomat::ship::Ship;
-
 use self::ship::State;
 
 pub struct Spaceautomat {
@@ -82,12 +81,11 @@ impl Spaceautomat {
         return ReturnCode::Ok;
     }
     /// Returns the initialization state
-    pub fn is_initialized(self) -> bool {
-        //match self.ship.get_state() {
-        //    State::Init => false,
-        //    State::Run => true
-        //}
-        true
+    pub fn is_initialized(&self) -> bool {
+        match self.ship.get_state() {
+            State::Init => { return false },
+            State::Run => { return true }
+        }
     }
     /// Calls the run()-function from the loaded code once
     pub fn step(&mut self) -> ReturnCode {
@@ -102,6 +100,7 @@ impl Spaceautomat {
 
         return ReturnCode::Ok;
     }
+    /// Get the number of performed simulation steps
     pub fn get_step_count(&self) -> u64 {
         return self.step_count;
     }

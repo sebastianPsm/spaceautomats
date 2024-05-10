@@ -1,9 +1,10 @@
-use mlua::{UserData, UserDataMethods, Scope};
+use mlua::{UserData, UserDataMethods};
 
 use super::device::Device;
 use super::dev_propulsion::Propulsion;
-use super::Spaceautomat;
 
+
+#[derive(Debug, Copy, Clone)]
 pub enum State {
     Init = 1,
     Run = 2
@@ -21,12 +22,10 @@ impl Ship {
             propulsion: Propulsion::new(),
         }
     }
-}
-impl Ship {
     pub fn set_state(&mut self, state: State) {
         self.state = state;
     }
-    pub fn get_state(self) -> State {
+    pub fn get_state(&self) -> State {
         self.state
     }
 }
@@ -44,4 +43,3 @@ impl UserData for Ship {
         })
     }
 }
-

@@ -32,8 +32,10 @@ impl Simulation {
     pub fn count_initialized(&self) -> usize {
         let mut result = 0;
 
-        self.automats.iter().for_each(|ele| { 
-            result += if ele.is_initialized() { 1 } else { 0 };
+        self.automats.iter().for_each(|ele| {
+            if ele.is_initialized() {
+                result += 1;
+            }
         });
 
         return result;
