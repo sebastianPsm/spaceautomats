@@ -7,4 +7,6 @@ end
 
 -- The run()-function is called in every simulation step
 function run(step)
+    ship:write(1024, 3);
+    ship:write(1025, 255);
 end

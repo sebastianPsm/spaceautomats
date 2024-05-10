@@ -94,6 +94,7 @@ impl Spaceautomat {
 
         let res = run_fcn.call::<_, bool>(true);
         if res.is_err() {
+            res.unwrap();
             return ReturnCode::RunFcnCall;
         }
         self.step_count += 1;

@@ -40,6 +40,10 @@ impl UserData for Ship {
         methods.add_method_mut("write", |_, ship, (addr, value):(u32, u8)| {
             ship.propulsion.write(addr, value);
             Ok(())
+        });
+        methods.add_method("read", |_, ship, addr: u32|{
+            let value = ship.propulsion.read(addr);
+            Ok(value)
         })
     }
 }
