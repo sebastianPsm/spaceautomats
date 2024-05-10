@@ -1,7 +1,6 @@
 mod spaceautomat;
 
 use spaceautomat::ReturnCode;
-
 use crate::spaceautomat::Spaceautomat;
 
 pub struct Simulation {
