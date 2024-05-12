@@ -52,3 +52,11 @@ fn load_space_automats_intialize_and_run_simulation() {
     assert!(step_counts[1] == 3);
     assert!(step_counts[2] == 3);
 }
+#[test]
+fn step() {
+    let mut sa = Simulation::new();
+    let automat = std::fs::read_to_string("tests/myautomat.lua").expect("Wasn't possible to load test/myautomat.lua");
+    sa.load_automat(&automat);
+    sa.init();
+    sa.step();
+}

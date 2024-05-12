@@ -58,10 +58,8 @@ impl Spaceautomat {
     }
     /// Calls the init()-function from the loaded code to configure the space automat
     pub fn init(&mut self) -> ReturnCode {
-        
         let result = self.lua.scope(|scope| {
             let globals = self.lua.globals();
-
             let ship_userdata = scope.create_userdata_ref_mut(&mut self.ship).unwrap();
             globals.set("ship", ship_userdata).unwrap();
 
@@ -74,6 +72,7 @@ impl Spaceautomat {
         });
         
         if result.is_err() {
+            result.unwrap();
             return ReturnCode::InitFcnCall;
         }
 
@@ -89,16 +88,22 @@ impl Spaceautomat {
     }
     /// Calls the run()-function from the loaded code once
     pub fn step(&mut self) -> ReturnCode {
-        let globals = self.lua.globals();
-        let run_fcn = globals.get::<_, Function>("run").unwrap();
+        let result = self.lua.scope(|scope| {
+            let globals = self.lua.globals();
+            let ship_userdata = scope.create_userdata_ref_mut(&mut self.ship).unwrap();
+            globals.set("ship", ship_userdata).unwrap();
 
-        let res = run_fcn.call::<_, bool>(true);
-        if res.is_err() {
-            res.unwrap();
+            let run_fcn = globals.get::<_, Function>("run").unwrap();
+            let res = run_fcn.call::<_, bool>(true);
+            return res;
+        });
+
+        if result.is_err() {
+            result.unwrap();
             return ReturnCode::RunFcnCall;
         }
-        self.step_count += 1;
 
+        self.step_count += 1;
         return ReturnCode::Ok;
     }
     /// Get the number of performed simulation steps
