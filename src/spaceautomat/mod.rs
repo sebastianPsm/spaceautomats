@@ -3,13 +3,20 @@ mod device;
 mod dev_propulsion;
 
 use mlua::{Function, Lua};
-use crate::spaceautomat::ship::Ship;
-use self::ship::State;
+use crate::spaceautomat::ship::LuaShip;
+
+
+#[derive(Debug, Copy, Clone)]
+pub enum State {
+    Init = 1,
+    Run = 2
+}
 
 pub struct Spaceautomat {
     lua: Lua,
     step_count: u64,
-    ship: Ship,
+    lua_ship: LuaShip,
+    state: State,
 }
 
 pub enum ReturnCode {
@@ -28,7 +35,8 @@ impl Spaceautomat {
         Spaceautomat {
             lua,
             step_count: 0,
-            ship: Ship::new(),
+            lua_ship: LuaShip::new(),
+            state: State::Init,
         }
     }
     /// Load Lua code and checks if init() and run() are available
@@ -59,49 +67,42 @@ impl Spaceautomat {
     /// Calls the init()-function from the loaded code to configure the space automat
     pub fn init(&mut self) -> ReturnCode {
         let result = self.lua.scope(|scope| {
-            let globals = self.lua.globals();
-            let ship_userdata = scope.create_userdata_ref_mut(&mut self.ship).unwrap();
-            globals.set("ship", ship_userdata).unwrap();
-
-            let init_fcn = globals.get::<_, Function>("init").unwrap();
-            let res = init_fcn.call::<_, bool>(true);
-            if res.is_err() {
-                return res;
-            }
+            let ship_userdata = scope.create_userdata_ref_mut(&mut self.lua_ship).unwrap();
+            let init_fcn = self.lua.globals().get::<_, Function>("init").unwrap();
+            let res = init_fcn.call::<_, bool>(ship_userdata);
             return res;
         });
-        
         if result.is_err() {
             result.unwrap();
             return ReturnCode::InitFcnCall;
         }
 
-        self.ship.set_state(ship::State::Run);
+        self.state = State::Run;
         return ReturnCode::Ok;
     }
     /// Returns the initialization state
     pub fn is_initialized(&self) -> bool {
-        match self.ship.get_state() {
+        match self.state {
             State::Init => { return false },
             State::Run => { return true }
         }
     }
     /// Calls the run()-function from the loaded code once
     pub fn step(&mut self) -> ReturnCode {
+        // Do a automat simulation step to update the control states
         let result = self.lua.scope(|scope| {
-            let globals = self.lua.globals();
-            let ship_userdata = scope.create_userdata_ref_mut(&mut self.ship).unwrap();
-            globals.set("ship", ship_userdata).unwrap();
-
-            let run_fcn = globals.get::<_, Function>("run").unwrap();
-            let res = run_fcn.call::<_, bool>(true);
+            let ship_userdata = scope.create_userdata_ref_mut(&mut self.lua_ship).unwrap();
+            let run_fcn = self.lua.globals().get::<_, Function>("run").unwrap();
+            let res = run_fcn.call::<_, bool>(ship_userdata);
             return res;
         });
-
         if result.is_err() {
             result.unwrap();
             return ReturnCode::RunFcnCall;
         }
+
+        // Do 
+        //self.lua_ship.propulsion.get_fuel();
 
         self.step_count += 1;
         return ReturnCode::Ok;

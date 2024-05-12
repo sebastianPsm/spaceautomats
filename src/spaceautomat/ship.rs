@@ -3,33 +3,18 @@ use mlua::{UserData, UserDataMethods};
 use super::device::Device;
 use super::dev_propulsion::Propulsion;
 
-
-#[derive(Debug, Copy, Clone)]
-pub enum State {
-    Init = 1,
-    Run = 2
+pub struct LuaShip {
+    pub propulsion: Propulsion,
 }
 
-pub struct Ship {
-    state: State,
-    propulsion: Propulsion,
-}
-
-impl Ship {
-    pub fn new() -> Ship {
-        Ship {
-            state: State::Init,
+impl LuaShip {
+    pub fn new() -> LuaShip {
+        LuaShip {
             propulsion: Propulsion::new(),
         }
     }
-    pub fn set_state(&mut self, state: State) {
-        self.state = state;
-    }
-    pub fn get_state(&self) -> State {
-        self.state
-    }
 }
-impl UserData for Ship {
+impl UserData for LuaShip {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_method_mut("slot", |_, ship, (slot_id, devicestr): (u8, String)| {
             if devicestr.eq("propulsion") {

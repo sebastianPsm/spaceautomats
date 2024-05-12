@@ -59,3 +59,14 @@ impl Device for Propulsion {
         }
     }
 }
+impl Propulsion {
+    pub fn get_fuel(&self) -> u32 {
+        self.fuel
+    }
+    pub fn get_power(&self) -> u8 {
+        self.power
+    }
+    pub fn get_forward(&self) -> bool {
+        self.forward
+    }
+}
