@@ -1,8 +1,8 @@
-use spaceautomats_simulation::{Simulation};
+use spaceautomats_simulation::Simulation;
 
 #[test]
 fn load_and_release() {
-    let mut sa = Simulation::new();
+    let mut sa = Simulation::new(5000,5000,1);
     
     let automat = "print('hello world!')".to_string();
     sa.load_automat(&automat);
@@ -18,7 +18,7 @@ fn load_and_release() {
 }
 #[test]
 fn load_20_space_automats_and_initialize() {
-    let mut sa = Simulation::new();
+    let mut sa = Simulation::new(5000,5000,1);
 
     let automat = std::fs::read_to_string("tests/myautomat.lua").expect("Wasn't possible to load test/myautomat.lua");
 
@@ -32,7 +32,7 @@ fn load_20_space_automats_and_initialize() {
 }
 #[test]
 fn load_space_automats_intialize_and_run_simulation() {
-    let mut sa = Simulation::new();
+    let mut sa = Simulation::new(5000,5000,1);
 
     let automat = std::fs::read_to_string("tests/myautomat.lua").expect("Wasn't possible to load test/myautomat.lua");
     sa.load_automat(&automat);
@@ -54,7 +54,7 @@ fn load_space_automats_intialize_and_run_simulation() {
 }
 #[test]
 fn step() {
-    let mut sa = Simulation::new();
+    let mut sa = Simulation::new(5000,5000,1);
     let automat = std::fs::read_to_string("tests/myautomat.lua").expect("Wasn't possible to load test/myautomat.lua");
     sa.load_automat(&automat);
     sa.init();

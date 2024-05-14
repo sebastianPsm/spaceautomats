@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 argparse = "0.2.2"
 mlua = { version = "0.9.7", features = ["lua54"] }
+rand = { version = "0.8.5", features = ["small_rng"] }
+rand_chacha = "0.3.1"

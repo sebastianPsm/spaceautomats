@@ -17,6 +17,8 @@ pub struct Spaceautomat {
     step_count: u64,
     lua_ship: LuaShip,
     state: State,
+    pos: (u64, u64), // (x,y)
+    dir: u16 // direction in deg*10 (0..3599)
 }
 
 pub enum ReturnCode {
@@ -37,6 +39,8 @@ impl Spaceautomat {
             step_count: 0,
             lua_ship: LuaShip::new(),
             state: State::Init,
+            pos: (0,0),
+            dir: 0,
         }
     }
     /// Load Lua code and checks if init() and run() are available
@@ -111,4 +115,13 @@ impl Spaceautomat {
     pub fn get_step_count(&self) -> u64 {
         return self.step_count;
     }
+    /// Set the position
+    pub fn set_pos(&mut self, pos: (u64, u64)) {
+        self.pos = pos;
+    }
+    /// Set the direction
+    pub fn set_dir(&mut self, dir: u16) {
+        self.dir = dir;
+    }
+
 }

@@ -1,16 +1,20 @@
 mod spaceautomat;
+mod physmodel;
 
 use spaceautomat::ReturnCode;
 use crate::spaceautomat::Spaceautomat;
+use crate::physmodel::Physmodel;
 
 pub struct Simulation {
-    automats: Vec<Spaceautomat>
+    automats: Vec<Spaceautomat>,
+    physmodel: Physmodel
 }
 
 impl Simulation {
-    pub fn new() -> Simulation {
+    pub fn new(x: u64, y: u64, seed: u64) -> Simulation {
         Simulation {
-            automats: Vec::new()
+            automats: Vec::new(),
+            physmodel: Physmodel::new(x, y, seed)
         }
     }
     /// Loads the Lua code for a automat
@@ -43,9 +47,13 @@ impl Simulation {
     }
     /// Calls the init()-function from all automats and initializes the simulation
     pub fn init(&mut self) {
+        // Initialize each automat --> calls init()-function from each automat
         self.automats.iter_mut().for_each(|ele| { 
             ele.init(); 
         });
+
+        // Initialize the physmodel with the automats
+        self.physmodel.init(&mut self.automats);
     }
     /// Counts the initializes automats
     pub fn count_initialized(&self) -> usize {
@@ -66,7 +74,9 @@ impl Simulation {
             if !ele.is_initialized() { return; }
             ele.step();
         });
-
+        
+        // Steps the physmodel with the automats
+        self.physmodel.update(&mut self.automats);
     }
     /// Provides a vector of simulation step counters for each automat
     pub fn count_steps(&self) -> Vec<u64> {
