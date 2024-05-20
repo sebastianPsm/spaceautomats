@@ -18,7 +18,7 @@ jobs:
     - name: Get lua
       run: |
         sudo apt update
-        sudo apt install -y --no-install-recommends liblua5.4-dev
+        sudo apt install -y --no-install-recommends liblua5.4-dev liblua5.3-dev
     - uses: actions/checkout@v3
     - name: Build
       run: cargo build --verbose

@@ -3,18 +3,18 @@ use mlua::{UserData, UserDataMethods};
 use super::device::Device;
 use super::dev_propulsion::Propulsion;
 
-pub struct LuaShip {
+pub struct Ship {
     pub propulsion: Propulsion,
 }
 
-impl LuaShip {
-    pub fn new() -> LuaShip {
-        LuaShip {
+impl Ship {
+    pub fn new() -> Ship {
+        Ship {
             propulsion: Propulsion::new(),
         }
     }
 }
-impl UserData for LuaShip {
+impl UserData for Ship {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_method_mut("slot", |_, ship, (slot_id, devicestr): (u8, String)| {
             if devicestr.eq("propulsion") {

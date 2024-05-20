@@ -63,6 +63,9 @@ impl Propulsion {
     pub fn get_fuel(&self) -> u32 {
         self.fuel
     }
+    pub fn set_fuel(&mut self, value: u32) {
+        self.fuel = value;
+    }
     pub fn get_power(&self) -> u8 {
         self.power
     }

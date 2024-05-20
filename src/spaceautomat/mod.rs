@@ -3,8 +3,7 @@ mod device;
 mod dev_propulsion;
 
 use mlua::{Function, Lua};
-use crate::spaceautomat::ship::LuaShip;
-
+use crate::spaceautomat::ship::Ship;
 
 #[derive(Debug, Copy, Clone)]
 pub enum State {
@@ -15,9 +14,10 @@ pub enum State {
 pub struct Spaceautomat {
     lua: Lua,
     step_count: u64,
-    lua_ship: LuaShip,
+    pub ship_hw: Ship,
     state: State,
     pos: (u64, u64), // (x,y)
+    velocity: (f32, f32),
     dir: u16 // direction in deg*10 (0..3599)
 }
 
@@ -37,9 +37,10 @@ impl Spaceautomat {
         Spaceautomat {
             lua,
             step_count: 0,
-            lua_ship: LuaShip::new(),
+            ship_hw: Ship::new(),
             state: State::Init,
-            pos: (0,0),
+            pos: (0, 0),
+            velocity: (0.0, 0.0),
             dir: 0,
         }
     }
@@ -71,7 +72,7 @@ impl Spaceautomat {
     /// Calls the init()-function from the loaded code to configure the space automat
     pub fn init(&mut self) -> ReturnCode {
         let result = self.lua.scope(|scope| {
-            let ship_userdata = scope.create_userdata_ref_mut(&mut self.lua_ship).unwrap();
+            let ship_userdata = scope.create_userdata_ref_mut(&mut self.ship_hw).unwrap();
             let init_fcn = self.lua.globals().get::<_, Function>("init").unwrap();
             let res = init_fcn.call::<_, bool>(ship_userdata);
             return res;
@@ -95,7 +96,7 @@ impl Spaceautomat {
     pub fn step(&mut self) -> ReturnCode {
         // Do a automat simulation step to update the control states
         let result = self.lua.scope(|scope| {
-            let ship_userdata = scope.create_userdata_ref_mut(&mut self.lua_ship).unwrap();
+            let ship_userdata = scope.create_userdata_ref_mut(&mut self.ship_hw).unwrap();
             let run_fcn = self.lua.globals().get::<_, Function>("run").unwrap();
             let res = run_fcn.call::<_, bool>(ship_userdata);
             return res;
