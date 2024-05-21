@@ -6,8 +6,8 @@ use super::dev_propulsion::Propulsion;
 pub struct Ship {
     pub propulsion: Propulsion,
 
-    pos: (u64, u64), // (x,y)
-    velocity: (f32, f32),
+    pos: (u32, u32), // (x,y)
+    velocity: (f64, f64),
     dir: u16 // direction in deg*10 (0..3599)
 }
 
@@ -21,11 +21,27 @@ impl Ship {
             dir: 0,
         }
     }
-    /// Set the position
-    pub fn set_pos(&mut self, pos: (u64, u64)) {
+    /// Get position
+    pub fn get_pos(&self) -> (u32, u32) {
+        self.pos
+    }
+    /// Set position
+    pub fn set_pos(&mut self, pos: (u32, u32)) {
         self.pos = pos;
     }
-    /// Set the direction
+    /// Get velocity
+    pub fn get_velocity(&self) -> (f64, f64) {
+        self.velocity
+    }
+    /// Set velocity
+    pub fn set_velocity(&mut self, value: (f64, f64)) {
+        self.velocity = value;
+    }
+    /// Get direction
+    pub fn get_dir(&self) -> u16 {
+        self.dir
+    }
+    /// Set direction
     pub fn set_dir(&mut self, dir: u16) {
         self.dir = dir;
     }

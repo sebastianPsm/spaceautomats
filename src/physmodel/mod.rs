@@ -5,18 +5,22 @@ use crate::spaceautomat::Spaceautomat;
 
 pub struct Physmodel {
     step_count: u64,
-    width: u64,
-    height: u64,
-    rng: ChaCha8Rng
+    width: u32,
+    height: u32,
+    rng: ChaCha8Rng,
+    t: f64,
+    m: f64,
 }
 
 impl Physmodel {
-    pub fn new(width: u64, height: u64, seed: u64) -> Physmodel {
+    pub fn new(width: u32, height: u32, seed: u64) -> Physmodel {
         Physmodel {
             step_count: 0,
             width: width,
             height: height,
-            rng: ChaCha8Rng::seed_from_u64(seed)
+            rng: ChaCha8Rng::seed_from_u64(seed),
+            t: 1.0,
+            m: 1.0,
         }
     }
     pub fn init(&mut self, automats: &mut Vec<Spaceautomat>) {
@@ -39,8 +43,17 @@ impl Physmodel {
             let forward = automat.ship_hw.propulsion.get_forward();
             if power > 0 && fuel >= u32::from(power) {
                 automat.ship_hw.propulsion.set_fuel(fuel-u32::from(power));
-                let power = i32::from(power) * if forward {1} else {-1};
-                
+                let power = f64::from(power) * if forward {1.0} else {-1.0};
+                let a = power / self.m;
+                let dir = f64::from(automat.ship_hw.get_dir());
+                let pos = automat.ship_hw.get_pos();
+                let vel = automat.ship_hw.get_velocity();
+
+                let vel_new = (a * self.t * dir.sin() + vel.0, a * self.t * dir.cos() + vel.1);
+                let pos_new = (vel.0 * self.t + pos.0 as f64, vel.1 * self.t + pos.1 as f64);
+
+                automat.ship_hw.set_velocity(vel_new);
+                automat.ship_hw.set_pos((pos_new.0 as u32, pos_new.1 as u32));
             }
         });
         self.step_count += 1;

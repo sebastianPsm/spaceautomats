@@ -11,7 +11,7 @@ pub struct Simulation {
 }
 
 impl Simulation {
-    pub fn new(x: u64, y: u64, seed: u64) -> Simulation {
+    pub fn new(x: u32, y: u32, seed: u64) -> Simulation {
         Simulation {
             automats: Vec::new(),
             physmodel: Physmodel::new(x, y, seed)

@@ -26,9 +26,9 @@ impl Device for Propulsion {
     fn set_slot(&mut self, slot_id: u8) {
         self.slot_id = slot_id;
     }
-    fn get_slot(&self) -> u8 {
-        return self.slot_id;
-    }
+    //fn get_slot(&self) -> u8 {
+    //    return self.slot_id;
+    //}
     fn write(&mut self, addr: u32, value: u8) {
         if self.slot_id == 0 {
             return;
