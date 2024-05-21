@@ -5,13 +5,29 @@ use super::dev_propulsion::Propulsion;
 
 pub struct Ship {
     pub propulsion: Propulsion,
+
+    pos: (u64, u64), // (x,y)
+    velocity: (f32, f32),
+    dir: u16 // direction in deg*10 (0..3599)
 }
 
 impl Ship {
     pub fn new() -> Ship {
         Ship {
             propulsion: Propulsion::new(),
+
+            pos: (0, 0),
+            velocity: (0.0, 0.0),
+            dir: 0,
         }
+    }
+    /// Set the position
+    pub fn set_pos(&mut self, pos: (u64, u64)) {
+        self.pos = pos;
+    }
+    /// Set the direction
+    pub fn set_dir(&mut self, dir: u16) {
+        self.dir = dir;
     }
 }
 impl UserData for Ship {

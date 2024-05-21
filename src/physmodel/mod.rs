@@ -25,8 +25,8 @@ impl Physmodel {
             let y = self.rng.gen_range(0..self.height);
             let dir = self.rng.gen_range(0..3599);
 
-            automat.set_pos((x,y));
-            automat.set_dir(dir);
+            automat.ship_hw.set_pos((x,y));
+            automat.ship_hw.set_dir(dir);
         });
     }
     pub fn update(&mut self, automats: &mut Vec<Spaceautomat>) {

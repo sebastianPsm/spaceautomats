@@ -16,9 +16,6 @@ pub struct Spaceautomat {
     step_count: u64,
     pub ship_hw: Ship,
     state: State,
-    pos: (u64, u64), // (x,y)
-    velocity: (f32, f32),
-    dir: u16 // direction in deg*10 (0..3599)
 }
 
 pub enum ReturnCode {
@@ -39,9 +36,6 @@ impl Spaceautomat {
             step_count: 0,
             ship_hw: Ship::new(),
             state: State::Init,
-            pos: (0, 0),
-            velocity: (0.0, 0.0),
-            dir: 0,
         }
     }
     /// Load Lua code and checks if init() and run() are available
@@ -105,10 +99,6 @@ impl Spaceautomat {
             result.unwrap();
             return ReturnCode::RunFcnCall;
         }
-
-        // Do 
-        //self.lua_ship.propulsion.get_fuel();
-
         self.step_count += 1;
         return ReturnCode::Ok;
     }
@@ -116,13 +106,4 @@ impl Spaceautomat {
     pub fn get_step_count(&self) -> u64 {
         return self.step_count;
     }
-    /// Set the position
-    pub fn set_pos(&mut self, pos: (u64, u64)) {
-        self.pos = pos;
-    }
-    /// Set the direction
-    pub fn set_dir(&mut self, dir: u16) {
-        self.dir = dir;
-    }
-
 }
