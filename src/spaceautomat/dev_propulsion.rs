@@ -35,7 +35,7 @@ impl Device for Propulsion {
         }
 
         let offset = 1024 * self.slot_id as u32;
-        match offset-addr {
+        match addr-offset {
             0 => {
                 self.enabled = (value & 0x01) == 1;
                 self.forward = (value & 0x02) == 2;

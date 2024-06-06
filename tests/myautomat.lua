@@ -2,8 +2,8 @@
 --  Use init() to configure your space automat.
 function init(ship)
     ship:name("myautomat")
-    ship:slot(0, "propulsion")
-    ship:slot(1, "reaction wheels")
+    ship:slot(1, "propulsion")
+    ship:slot(2, "reaction wheels")
 end
 
 -- The run()-function is called in every simulation step
