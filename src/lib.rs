@@ -34,7 +34,7 @@ impl Simulation {
     ///    ship:write(1025, 255);
     ///end
     /// ```
-    pub fn load_automat(&mut self, code: &String) {
+    pub fn load_automat(&mut self, code: &str) {
         let mut sa = Spaceautomat::new();
         let rc = sa.load_code(code);
         if matches!(rc, ReturnCode::Ok) {
@@ -44,6 +44,18 @@ impl Simulation {
     /// Counts the loaded automats (automats with invalid Lua syntax are not loaded)
     pub fn count_automats(&self) -> usize {
         return self.automats.len();
+    }
+    /// Get automats
+    pub fn get_automats(&self) -> Vec<&Spaceautomat> {
+        let mut ret: Vec<&Spaceautomat> = vec![];
+        for sa in &self.automats {
+            ret.push(&sa);
+        }
+        ret
+    }
+    /// Get physmodel
+    pub fn get_physmodel(&self) -> &Physmodel {
+        &self.physmodel
     }
     /// Calls the init()-function from all automats and initializes the simulation
     pub fn init(&mut self) {

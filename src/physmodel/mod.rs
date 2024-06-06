@@ -23,6 +23,10 @@ impl Physmodel {
             m: 1.0,
         }
     }
+    /// Get dimension (with and hight)
+    pub fn get_dim(&self) -> (u32, u32) {
+        (self.width, self.height)
+    }
     pub fn init(&mut self, automats: &mut Vec<Spaceautomat>) {
         automats.iter_mut().for_each(|automat| {
             let x = self.rng.gen_range(0..self.width);

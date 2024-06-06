@@ -6,7 +6,6 @@ pub struct Propulsion {
     forward: bool,
     fuel: u32,
     power: u8,
-    
 }
 
 impl Propulsion {
@@ -25,6 +24,7 @@ impl Propulsion {
 impl Device for Propulsion {
     fn set_slot(&mut self, slot_id: u8) {
         self.slot_id = slot_id;
+        self.fuel = u32::MAX;
     }
     //fn get_slot(&self) -> u8 {
     //    return self.slot_id;

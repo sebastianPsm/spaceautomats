@@ -39,7 +39,7 @@ impl Spaceautomat {
         }
     }
     /// Load Lua code and checks if init() and run() are available
-    pub fn load_code(&mut self, code: &String) -> ReturnCode {
+    pub fn load_code(&mut self, code: &str) -> ReturnCode {
         /*
          * Load code string
          */
