@@ -54,7 +54,9 @@ impl Physmodel {
                 let vel = automat.ship_hw.get_velocity();
 
                 let vel_new = (a * self.t * dir.sin() + vel.0, a * self.t * dir.cos() + vel.1);
-                let pos_new = (vel.0 * self.t + pos.0 as f64, vel.1 * self.t + pos.1 as f64);
+                let mut pos_new = (vel.0 * self.t + pos.0 as f64, vel.1 * self.t + pos.1 as f64);
+                pos_new.0 = if pos_new.0 > self.width as f64 { self.width as f64 } else { pos_new.0 };
+                pos_new.1 = if pos_new.1 > self.height as f64 { self.height as f64 } else { pos_new.1 };
 
                 automat.ship_hw.set_velocity(vel_new);
                 automat.ship_hw.set_pos((pos_new.0 as u32, pos_new.1 as u32));
