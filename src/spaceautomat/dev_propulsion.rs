@@ -16,7 +16,6 @@ impl Propulsion {
             forward: true,
             fuel: 0,
             power: 0,
-            
         }
     }
 }
@@ -26,9 +25,6 @@ impl Device for Propulsion {
         self.slot_id = slot_id;
         self.fuel = u32::MAX;
     }
-    //fn get_slot(&self) -> u8 {
-    //    return self.slot_id;
-    //}
     fn write(&mut self, addr: u32, value: u8) {
         if self.slot_id == 0 {
             return;

@@ -49,7 +49,7 @@ impl Physmodel {
                 automat.ship_hw.propulsion.set_fuel(fuel-u32::from(power));
                 let power = f64::from(power) * if forward {1.0} else {-1.0};
                 let a = power / self.m;
-                let dir = f64::from(automat.ship_hw.get_dir());
+                let dir = automat.ship_hw.get_dir_rad();
                 let pos = automat.ship_hw.get_pos();
                 let vel = automat.ship_hw.get_velocity();
 

@@ -45,6 +45,10 @@ impl Ship {
     pub fn get_dir(&self) -> u16 {
         self.dir
     }
+    /// Get direction [rad]
+    pub fn get_dir_rad(&self) -> f64 {
+        (self.dir as f64) / 10.0 / 180.0 * std::f64::consts::PI
+    }
     /// Set direction
     pub fn set_dir(&mut self, dir: u16) {
         self.dir = dir;
