@@ -3,11 +3,11 @@
 function init(ship)
     ship:name("myautomat")
     ship:slot(1, "propulsion")
-    ship:slot(2, "reaction wheels")
+    ship:slot(2, "reaction wheel")
 end
 
 -- The run()-function is called in every simulation step
 function run(ship)
-    ship:write(1024, 3);
-    ship:write(1025, 255);
+    ship:write(1, 0, 3);
+	ship:write(1, 1, 255);
 end

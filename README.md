@@ -17,14 +17,23 @@ The following devices are available:
 
 A propulsion device comes with a fuel tank and drives your ship.
 
-| Offset 	| Name  	| r/w 	| Description                                    	|
-|--------	|-------	|-----	|------------------------------------------------	|
-| 0      	| Ctrl  	| w   	| Bit 0: Enabled<br>Bit 1: Forward               	|
-| 1      	| Power 	| w   	| Power level (0..255)                           	|
-| 2      	| Fuel  	| r   	| Fuel level (Bit 0..7, least significant octet) 	|
-| 3      	| Fuel  	| r   	| Fuel level (Bit 8..15)                         	|
-| 4      	| Fuel  	| r   	| Fuel level (Bit 16..23)                        	|
-| 5      	| Fuel  	| r   	| Fuel level (Bit 24..31)                        	|
+| Offset    | Name     | r/w    | Description                                       |
+|--------   |-------   |-----   |------------------------------------------------   |
+| 0         | Ctrl     | w      | Bit 0: Enabled<br>Bit 1: Forward                  |
+| 1         | Power    | w      | Power level (0..255)                              |
+| 2         | Fuel     | r      | Fuel level (Bit 0..7, least significant octet)    |
+| 3         | Fuel     | r      | Fuel level (Bit 8..15)                            |
+| 4         | Fuel     | r      | Fuel level (Bit 16..23)                           |
+| 5         | Fuel     | r      | Fuel level (Bit 24..31)                           |
+
+### Reaction wheel ('reaction wheel')
+
+A reaction wheel device rotates the ship.
+
+| Offset    | Name     | r/w    | Description                                              |
+|--------   |-------   |-----   |--------------------------------------------------------- |
+| 0         | Ctrl     | w      | Bit 0: Enabled<br>Bit 1: Rotate counter-clockwise if set |
+| 1         | Power    | w      | Power level (0..255)                                     |
 
 #### Example
 

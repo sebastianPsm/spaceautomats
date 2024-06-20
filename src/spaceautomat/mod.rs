@@ -1,6 +1,7 @@
 mod ship;
 mod device;
 mod dev_propulsion;
+mod dev_reaction_wheel;
 
 use mlua::{Function, Lua};
 use crate::spaceautomat::ship::Ship;
