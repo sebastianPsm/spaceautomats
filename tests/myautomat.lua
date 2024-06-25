@@ -8,6 +8,8 @@ end
 
 -- The run()-function is called in every simulation step
 function run(ship)
-    ship:write(1, 0, 3);
-	ship:write(1, 1, 255);
+    ship:write(1, 0, 3)
+	ship:write(1, 1, 255)
+	ship:write(2, 0, 1)
+	ship:write(2, 1, 1)
 end

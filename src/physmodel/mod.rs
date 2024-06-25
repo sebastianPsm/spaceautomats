@@ -10,6 +10,7 @@ pub struct Physmodel {
     rng: ChaCha8Rng,
     t: f64,
     m: f64,
+    i: f64,
 }
 
 impl Physmodel {
@@ -21,6 +22,7 @@ impl Physmodel {
             rng: ChaCha8Rng::seed_from_u64(seed),
             t: 1.0,
             m: 1.0,
+            i: 1.0,
         }
     }
     /// Get dimension (with and hight)
@@ -61,7 +63,7 @@ impl Physmodel {
              * Reaction wheel
              */
             let reaction_wheel_enabled = automat.ship_hw.reaction_wheel.get_enabled();
-            let mut momentum: f64 = 0.0;
+            let mut ang_accel: f64 = 0.0;
 
             if reaction_wheel_enabled {
                 let power_value = automat.ship_hw.reaction_wheel.get_power();
@@ -70,23 +72,28 @@ impl Physmodel {
                     automat.ship_hw.propulsion.set_fuel(fuel);
 
                     let counterclock = automat.ship_hw.reaction_wheel.get_counterclock();
-                    momentum = f64::from(power_value) * if counterclock {1.0} else {-1.0};
+                    ang_accel = f64::from(power_value) * if counterclock {1.0} else {-1.0} / 10000.0;
                 }
             }
 
+            let m = ang_accel / self.i;
+            let dir: f64 = automat.ship_hw.get_dir_rad();
+            let angular_velo = automat.ship_hw.get_angular_velocity_rad();
 
-            let mut dir = automat.ship_hw.get_dir_rad();
-            
+            let angular_velo_new = angular_velo + m*self.t;
+            let dir_new = angular_velo_new * self.t + dir;           
 
-            let a = power / self.m;
+            let a: f64 = power / self.m;
             let pos = automat.ship_hw.get_pos();
             let vel = automat.ship_hw.get_velocity();
 
-            let vel_new = (a * self.t * dir.sin() + vel.0, a * self.t * dir.cos() + vel.1);
+            let vel_new = (a * self.t * dir_new.sin() + vel.0, a * self.t * dir_new.cos() + vel.1);
             let mut pos_new = (vel.0 * self.t + pos.0 as f64, vel.1 * self.t + pos.1 as f64);
             pos_new.0 = if pos_new.0 > self.width as f64 { self.width as f64 } else { pos_new.0 };
             pos_new.1 = if pos_new.1 > self.height as f64 { self.height as f64 } else { pos_new.1 };
-
+            
+            automat.ship_hw.set_angular_velocity_rad(angular_velo_new);
+            automat.ship_hw.set_dir_rad(dir_new);
             automat.ship_hw.set_velocity(vel_new);
             automat.ship_hw.set_pos((pos_new.0 as u32, pos_new.1 as u32));
         });

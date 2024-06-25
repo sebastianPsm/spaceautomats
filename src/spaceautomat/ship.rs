@@ -20,6 +20,7 @@ pub struct Ship {
     pos: (u32, u32), // (x,y)
     velocity: (f64, f64),
     dir: u16, // direction in deg*10 (0..3599)
+    angular_velocity: f64,
     name: String,
     health: u16
 }
@@ -34,6 +35,7 @@ impl Ship {
             pos: (0, 0),
             velocity: (0.0, 0.0),
             dir: 0,
+            angular_velocity: 0.0,
             name: "MyShip".to_string(),
             health: u16::MAX,
         }
@@ -58,13 +60,31 @@ impl Ship {
     pub fn get_dir(&self) -> u16 {
         self.dir
     }
+    /// Set direction
+    pub fn set_dir(&mut self, dir: u16) {
+        self.dir = dir;
+    }
     /// Get direction [rad]
     pub fn get_dir_rad(&self) -> f64 {
         (self.dir as f64) / 10.0 / 180.0 * std::f64::consts::PI
     }
-    /// Set direction
-    pub fn set_dir(&mut self, dir: u16) {
-        self.dir = dir;
+    /// Set direction [rad]
+    pub fn set_dir_rad(&mut self, mut dir_rad: f64) {
+        while dir_rad < 0.0 {
+            dir_rad += 2.0 * std::f64::consts::PI;
+        }
+        let x = dir_rad / 2.0 / std::f64::consts::PI;
+        let y = x.fract();
+        let z = y * 180.0 * 10.0;
+        self.set_dir(((dir_rad / std::f64::consts::PI).fract() * 180.0 * 10.0) as u16)
+    }
+    /// Get angular velocity [rad/step]
+    pub fn get_angular_velocity_rad(&self) -> f64 {
+        self.angular_velocity
+    }
+    /// Set angular velocity [rad/step]
+    pub fn set_angular_velocity_rad(&mut self, ang_vel_rad: f64) {
+        self.angular_velocity = ang_vel_rad;
     }
     /// Set name
     pub fn set_name(&mut self, name: &String) {
