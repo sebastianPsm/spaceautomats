@@ -62,21 +62,20 @@ impl Ship {
     }
     /// Set direction
     pub fn set_dir(&mut self, dir: u16) {
-        self.dir = dir;
+        self.dir = dir%3600;
     }
     /// Get direction [rad]
     pub fn get_dir_rad(&self) -> f64 {
         (self.dir as f64) / 10.0 / 180.0 * std::f64::consts::PI
     }
     /// Set direction [rad]
-    pub fn set_dir_rad(&mut self, mut dir_rad: f64) {
-        while dir_rad < 0.0 {
-            dir_rad += 2.0 * std::f64::consts::PI;
+    pub fn set_dir_rad(&mut self, dir_rad: f64) {
+        let mut dir = dir_rad / std::f64::consts::PI * 180.0 * 10.0;
+        while dir < 0.0 {
+            dir += 3600.0
         }
-        let x = dir_rad / 2.0 / std::f64::consts::PI;
-        let y = x.fract();
-        let z = y * 180.0 * 10.0;
-        self.set_dir(((dir_rad / std::f64::consts::PI).fract() * 180.0 * 10.0) as u16)
+
+        self.set_dir(dir as u16)
     }
     /// Get angular velocity [rad/step]
     pub fn get_angular_velocity_rad(&self) -> f64 {
