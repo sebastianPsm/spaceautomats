@@ -83,19 +83,25 @@ impl Physmodel {
             let angular_velo_new = angular_velo + m*self.t;
             let dir_new = angular_velo_new * self.t + dir;           
 
-            let a: f64 = power / self.m;
-            let pos = automat.ship_hw.get_pos();
-            let vel = automat.ship_hw.get_velocity();
+            let s = (automat.ship_hw.get_pos().0 as f64, automat.ship_hw.get_pos().1  as f64);
+            let v = automat.ship_hw.get_speed();
+            let a = (power / self.m * dir_new.sin(), power / self.m * dir_new.cos());            
 
-            let vel_new = (a * self.t * dir_new.sin() + vel.0, a * self.t * dir_new.cos() + vel.1);
-            let mut pos_new = (vel.0 * self.t + pos.0 as f64, vel.1 * self.t + pos.1 as f64);
-            pos_new.0 = if pos_new.0 > self.width as f64 { self.width as f64 } else { pos_new.0 };
-            pos_new.1 = if pos_new.1 > self.height as f64 { self.height as f64 } else { pos_new.1 };
+            let mut s_new = (s.0 + v.0 * self.t + a.0 * self.t*self.t, 
+                                         s.1 + v.1 * self.t + a.1 * self.t*self.t);
+
+            // Boundary
+            s_new.0 = if s_new.0 > self.width.into() { self.width.into() } else { s_new.0 };
+            s_new.0 = if s_new.0 < 0.0 { 0.0 } else { s_new.0 };
+            s_new.1 = if s_new.1 > self.height.into() { self.height.into() } else { s_new.1 };
+            s_new.1 = if s_new.1 < 0.0 { 0.0 } else { s_new.1 };
+
+            let v_new = (s_new.0 - s.0 / self.t, s_new.1 - s.1 / self.t);
             
             automat.ship_hw.set_angular_velocity_rad(angular_velo_new);
             automat.ship_hw.set_dir_rad(dir_new);
-            automat.ship_hw.set_velocity(vel_new);
-            automat.ship_hw.set_pos((pos_new.0 as u32, pos_new.1 as u32));
+            automat.ship_hw.set_speed(v_new);
+            automat.ship_hw.set_pos((s_new.0 as u32, s_new.1 as u32));
         });
         self.step_count += 1;
     }

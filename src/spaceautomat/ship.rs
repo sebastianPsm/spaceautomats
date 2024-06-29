@@ -18,7 +18,7 @@ pub struct Ship {
     device_map: HashMap<u8, DeviceEnum>,
 
     pos: (u32, u32), // (x,y)
-    velocity: (f64, f64),
+    speed: (f64, f64),
     dir: u16, // direction in deg*10 (0..3599)
     angular_velocity: f64,
     name: String,
@@ -33,7 +33,7 @@ impl Ship {
             device_map: HashMap::new(),
 
             pos: (0, 0),
-            velocity: (0.0, 0.0),
+            speed: (0.0, 0.0),
             dir: 0,
             angular_velocity: 0.0,
             name: "MyShip".to_string(),
@@ -48,13 +48,13 @@ impl Ship {
     pub fn set_pos(&mut self, pos: (u32, u32)) {
         self.pos = pos;
     }
-    /// Get velocity
-    pub fn get_velocity(&self) -> (f64, f64) {
-        self.velocity
+    /// Get speed
+    pub fn get_speed(&self) -> (f64, f64) {
+        self.speed
     }
-    /// Set velocity
-    pub fn set_velocity(&mut self, value: (f64, f64)) {
-        self.velocity = value;
+    /// Set speed
+    pub fn set_speed(&mut self, value: (f64, f64)) {
+        self.speed = value;
     }
     /// Get direction
     pub fn get_dir(&self) -> u16 {
