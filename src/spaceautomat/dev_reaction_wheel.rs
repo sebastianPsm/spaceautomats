@@ -1,15 +1,15 @@
 use super::device::Device;
 
-pub struct Reaction_wheel {
+pub struct ReactionWheel {
     slot_id: u8,
     enabled: bool,
     counterclock: bool,
     power: u8,
 }
 
-impl Reaction_wheel {
-    pub fn new() -> Reaction_wheel {
-        Reaction_wheel {
+impl ReactionWheel {
+    pub fn new() -> ReactionWheel {
+        ReactionWheel {
             slot_id: 0,
             enabled: false,
             counterclock: false,
@@ -18,7 +18,7 @@ impl Reaction_wheel {
     }
 }
 
-impl Device for Reaction_wheel {
+impl Device for ReactionWheel {
     fn get_name() -> String {
         "reaction wheel".to_string()
     }
@@ -49,7 +49,7 @@ impl Device for Reaction_wheel {
         }
     }
 }
-impl Reaction_wheel {
+impl ReactionWheel {
     pub fn get_enabled(&self) -> bool {
         self.enabled
     }

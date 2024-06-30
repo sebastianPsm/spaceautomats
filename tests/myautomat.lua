@@ -4,20 +4,27 @@ function init(ship)
     ship:name("myautomat")
     ship:slot(1, "propulsion")
     ship:slot(2, "reaction wheel")
+    ship:slot(3, "scanner")
+
+	ship:write(1, 0, 3) -- enable propulsion, forward
+	ship:write(1, 1, 100) -- propulsion power
+
+	ship:write(2, 0, 1) -- enable reaction wheel
+	ship:write(2, 1, 1) -- turn
+
+	ship:write(3, 0, 1) -- enable scanner
+	ship:write(3, 1, 10) -- aperture angle (x/255*360)
+	ship:write(3, 2, 255) -- max. detection distance
+	ship:write(3, 3, 0) -- heading
+	ship:write(3, 4, 255) --sensitivity
 end
 
 -- The run()-function is called in every simulation step
 t = 0
 function run(ship)
-    ship:write(1, 0, 3)
-	ship:write(1, 1, 255)
-	ship:write(2, 0, 1)
-	ship:write(2, 1, 1)
 	t = t + 1
 	if(t > 100)
 	then
-		ship:write(1, 1, 100)
-		ship:write(2, 1, 0)
+		ship:write(2, 1, 0) -- turn off
 	end
-
 end

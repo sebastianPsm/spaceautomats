@@ -26,6 +26,22 @@ A propulsion device comes with a fuel tank and drives your ship.
 | 4         | Fuel     | r      | Fuel level (Bit 16..23)                           |
 | 5         | Fuel     | r      | Fuel level (Bit 24..31)                           |
 
+#### Example
+
+*init()*
+
+    ship.slot(1, 'propulsion')
+    ship.write(1, 1, 255) -- Set max. to the Power memory address
+
+*run()* 
+
+    ship.write(1, 0, 3) -- Set the Enabled- and Forward-flag from the Ctrl memory addres
+    b1 = ship.read(1, 2) -- Read all 4 fuel bytes and put them together
+    b2 = ship.read(1, 3)
+    b3 = ship.read(1, 4)
+    b4 = ship.read(1, 5)
+    fuel = b1 | b2<<8 | b3<<16 | b4<<24
+
 ### Reaction wheel ('reaction wheel')
 
 A reaction wheel device rotates the ship.
@@ -35,18 +51,30 @@ A reaction wheel device rotates the ship.
 | 0         | Ctrl     | w      | Bit 0: Enabled<br>Bit 1: Rotate counter-clockwise if set |
 | 1         | Power    | w      | Power level (0..255)                                     |
 
+### Scanner ('scanner')
+
+A scanner is able to detect objects in the surrounding area. 
+
+| Offset | Name                    | r/w | Description
+|--------|-------------------------|-----|-----------------
+| 0      | Ctrl                    | w   | Bit 0: Enabled
+| 1      | Aperture angle          | w   | Aperture angle of the scanner
+| 2      | Max. detection distance | w   | Max. detection distance of the scanner
+| 3      | Heading                 | w   | Heading offset of the scanner
+| 4      | Sensitivity             | w   | Sensitivity of the scanner
+| 5      | Detection#1             | r   | Object with the strongest signature
+| 6      | Detection#2             | r   | Object with the 2nd strongest signature
+| 7      | Detection#3             | r   | Object with the 3rd strongest signature
+| 8      | Detection#4             | r   | Object with the 4th strongest signature
+| 9      | Boundary detector       | r   | Detects the boundary
+
 #### Example
 
 *init()*
 
-    ship.slot(1, 'propulsion')
-    ship.write(0x1001, 255) -- Set max. to the Power memory address
-
-*run()* 
-
-    ship.write(0x1000, 3) -- Set the Enabled- and Forward-flag from the Ctrl memory addres
-    b1 = ship.read(0x1002) -- Read all 4 fuel bytes and put them together
-    b2 = ship.read(0x1003)
-    b3 = ship.read(0x1004)
-    b4 = ship.read(0x1005)
-    fuel = b1 | b2<<8 | b3<<16 | b4<<24
+    ship.slot(3, 'scanner')
+    ship.write(3, 0, 1) -- Enable scanner
+    ship.write(3, 1, 60) -- Set aperture angle
+    ship.write(3, 2, 255) -- Set max. detection distance
+    ship.write(3, 3, 0) -- Set heading offset
+    ship.write(3, 4, 255) -- Set sensitivity

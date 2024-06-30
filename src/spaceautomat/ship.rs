@@ -2,18 +2,21 @@ use std::collections::HashMap;
 
 use mlua::{UserData, UserDataMethods};
 
-use super::dev_reaction_wheel::Reaction_wheel;
-use super::device::Device;
+use super::dev_reaction_wheel::ReactionWheel;
+use super::dev_scanner::Scanner;
 use super::dev_propulsion::Propulsion;
+use super::device::Device;
 
 enum DeviceEnum {
     Propulsion,
     ReactionWheel,
+    Scanner,
 }
 
 pub struct Ship {
     pub propulsion: Propulsion,
-    pub reaction_wheel: Reaction_wheel,
+    pub reaction_wheel: ReactionWheel,
+    pub scanner: Scanner,
     
     device_map: HashMap<u8, DeviceEnum>,
 
@@ -29,7 +32,8 @@ impl Ship {
     pub fn new() -> Ship {
         Ship {
             propulsion: Propulsion::new(),
-            reaction_wheel: Reaction_wheel::new(),
+            reaction_wheel: ReactionWheel::new(),
+            scanner: Scanner::new(),
             device_map: HashMap::new(),
 
             pos: (0, 0),
@@ -113,9 +117,13 @@ impl UserData for Ship {
                 ship.propulsion.set_active(slot_id);
                 ship.device_map.insert(slot_id, DeviceEnum::Propulsion);
             }
-            if Reaction_wheel::get_name().eq(&devicestr) {
+            if ReactionWheel::get_name().eq(&devicestr) {
                 ship.reaction_wheel.set_active(slot_id);
                 ship.device_map.insert(slot_id, DeviceEnum::ReactionWheel);
+            }
+            if Scanner::get_name().eq(&devicestr) {
+                ship.scanner.set_active(slot_id);
+                ship.device_map.insert(slot_id, DeviceEnum::Scanner);
             }
             Ok(())
         });
@@ -125,6 +133,7 @@ impl UserData for Ship {
                 match device_enum {
                     DeviceEnum::Propulsion => {ship.propulsion.write(addr, value)},
                     DeviceEnum::ReactionWheel => {ship.reaction_wheel.write(addr, value)},
+                    DeviceEnum::Scanner => {ship.scanner.write(addr, value)},
                 }
             }
             Ok(())
@@ -135,6 +144,7 @@ impl UserData for Ship {
                 match device_enum {
                     DeviceEnum::Propulsion => { return Ok(ship.propulsion.read(addr)); },
                     DeviceEnum::ReactionWheel => { return Ok(ship.reaction_wheel.read(addr)); },
+                    DeviceEnum::Scanner => { return Ok(ship.scanner.read(addr)); },
                 }
             }
             Ok(0)

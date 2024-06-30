@@ -97,7 +97,7 @@ impl Physmodel {
             s_new.1 = if s_new.1 < 0.0 { 0.0 } else { s_new.1 };
 
             let v_new = (s_new.0 - s.0 / self.t, s_new.1 - s.1 / self.t);
-            
+
             automat.ship_hw.set_angular_velocity_rad(angular_velo_new);
             automat.ship_hw.set_dir_rad(dir_new);
             automat.ship_hw.set_speed(v_new);
