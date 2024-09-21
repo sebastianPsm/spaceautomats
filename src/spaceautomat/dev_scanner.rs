@@ -1,4 +1,4 @@
-use super::device::Device;
+use super::{device::Device, Spaceautomat};
 
 pub struct Scanner {
     slot_id: u8,
@@ -74,5 +74,13 @@ impl Scanner {
     }
     pub fn get_max_detection_distance(&self) -> f64 {
         self.max_detection_distance
+    }
+    pub fn scan(&self, ego: &Spaceautomat, automats: &Vec<Spaceautomat>) {
+        let (ego_x, ego_y) = ego.ship_hw.get_pos();
+
+        automats.iter().for_each(|automat| {
+            let (x,y) = automat.ship_hw.get_pos();
+            // todo
+        });
     }
 }

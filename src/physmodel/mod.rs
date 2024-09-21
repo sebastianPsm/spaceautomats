@@ -90,7 +90,9 @@ impl Physmodel {
             let mut s_new = (s.0 + v.0 * self.t + a.0 * self.t*self.t, 
                                          s.1 + v.1 * self.t + a.1 * self.t*self.t);
 
-            // Boundary
+            /*
+             * Boundary
+             */             
             s_new.0 = if s_new.0 > self.width.into() { self.width.into() } else { s_new.0 };
             s_new.0 = if s_new.0 < 0.0 { 0.0 } else { s_new.0 };
             s_new.1 = if s_new.1 > self.height.into() { self.height.into() } else { s_new.1 };
@@ -102,6 +104,13 @@ impl Physmodel {
             automat.ship_hw.set_dir_rad(dir_new);
             automat.ship_hw.set_speed(v_new);
             automat.ship_hw.set_pos((s_new.0 as u32, s_new.1 as u32));
+
+            /*
+             * Scanner
+             */
+            if automat.ship_hw.scanner.get_enabled() {
+                automat.ship_hw.scanner.scan(&automat, &automats);
+            }
         });
         self.step_count += 1;
     }

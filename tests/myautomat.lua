@@ -7,7 +7,7 @@ function init(ship)
     ship:slot(3, "scanner")
 
 	ship:write(1, 0, 3) -- enable propulsion, forward
-	ship:write(1, 1, 10) -- propulsion power
+	ship:write(1, 1, 50) -- propulsion power
 
 	ship:write(2, 0, 1) -- enable reaction wheel
 	ship:write(2, 1, 1) -- turn
@@ -25,8 +25,9 @@ function run(ship)
 	t = t + 1
 	if(t > 100)
 	then
+		ship:write(1, 1, 0) -- propulsion power off
 		ship:write(2, 1, 0) -- turn off
-		ship:write(3, 1, 255-t%255) -- aperture angle (x/255*360)
-		ship:write(3, 3, t%255) -- scanner heading
+--		ship:write(3, 1, 255-t%255) -- aperture angle (x/255*360)
+--		ship:write(3, 3, t%255) -- scanner heading
 	end
 end
