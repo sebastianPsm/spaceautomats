@@ -1,3 +1,5 @@
+use core::f64;
+
 use super::{device::Device, Spaceautomat};
 
 pub struct Scanner {
@@ -75,12 +77,20 @@ impl Scanner {
     pub fn get_max_detection_distance(&self) -> f64 {
         self.max_detection_distance
     }
-    pub fn scan(&self, ego: &Spaceautomat, automats: &Vec<Spaceautomat>) {
-        let (ego_x, ego_y) = ego.ship_hw.get_pos();
+    pub fn check(&self, ego: &Spaceautomat, all_positions: &Vec<(u32, u32)>) {
+        let ego_pos = ego.ship_hw.get_pos();
+        let ego_x = ego_pos.0 as f64;
+        let ego_y = ego_pos.1 as f64;
 
-        automats.iter().for_each(|automat| {
-            let (x,y) = automat.ship_hw.get_pos();
-            // todo
-        });
+        for pos in all_positions {
+            let dx = pos.0 as f64 - ego_x;
+            let dy = pos.1 as f64 - ego_y;
+            if dx == 0.0 && dy == 0.0 { continue; }
+
+            let a = dy.atan2(dx);
+            let a_deg = a / f64::consts::PI * 180.0;
+
+            let x = a_deg+1.0;
+        }
     }
 }

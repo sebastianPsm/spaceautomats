@@ -40,7 +40,12 @@ impl Physmodel {
         });
     }
     pub fn update(&mut self, automats: &mut Vec<Spaceautomat>) {
-        automats.iter_mut().for_each(|automat| {
+        let mut all_positions = Vec::new();
+        for automat in automats.iter() {
+            all_positions.push(automat.ship_hw.get_pos());
+        }
+
+        for automat in automats.iter_mut() {
             /*
              * Propulsion
              */
@@ -109,9 +114,9 @@ impl Physmodel {
              * Scanner
              */
             if automat.ship_hw.scanner.get_enabled() {
-                automat.ship_hw.scanner.scan(&automat, &automats);
+                automat.ship_hw.scanner.check(automat, &all_positions);
             }
-        });
+        }
         self.step_count += 1;
     }
 }
