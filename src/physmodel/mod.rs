@@ -25,7 +25,7 @@ impl Physmodel {
             i: 1.0,
         }
     }
-    /// Get dimension (with and hight)
+    /// Get dimension (width and hight)
     pub fn get_dim(&self) -> (u32, u32) {
         (self.width, self.height)
     }
@@ -90,7 +90,7 @@ impl Physmodel {
 
             let s = (automat.ship_hw.get_pos().0 as f64, automat.ship_hw.get_pos().1  as f64);
             let v = automat.ship_hw.get_speed();
-            let a = (power / self.m * dir_new.sin(), power / self.m * dir_new.cos());            
+            let a = (power / self.m * dir_new.cos(), power / self.m * dir_new.sin());            
 
             let mut s_new = (s.0 + v.0 * self.t + a.0 * self.t*self.t, 
                                          s.1 + v.1 * self.t + a.1 * self.t*self.t);

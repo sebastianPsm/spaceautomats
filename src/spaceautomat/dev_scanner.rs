@@ -79,6 +79,7 @@ impl Scanner {
     }
     pub fn check(&self, ego: &Spaceautomat, all_positions: &Vec<(u32, u32)>) {
         let ego_pos = ego.ship_hw.get_pos();
+        let ego_dir = ego.ship_hw.get_dir_rad();
         let ego_x = ego_pos.0 as f64;
         let ego_y = ego_pos.1 as f64;
 
@@ -87,10 +88,12 @@ impl Scanner {
             let dy = pos.1 as f64 - ego_y;
             if dx == 0.0 && dy == 0.0 { continue; }
 
-            let a = dy.atan2(dx);
-            let a_deg = a / f64::consts::PI * 180.0;
+            let absolut = (dy.atan2(dx) + 2.0*f64::consts::PI) % (2.0*f64::consts::PI);
+            let relative = ego_dir - absolut;
 
-            let x = a_deg+1.0;
+            let relative_deg = relative / f64::consts::PI * 180.0;
+
+            let x = relative_deg+1.0;
         }
     }
 }
