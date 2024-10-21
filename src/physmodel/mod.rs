@@ -114,7 +114,8 @@ impl Physmodel {
              * Scanner
              */
             if automat.ship_hw.scanner.get_enabled() {
-                automat.ship_hw.scanner.check(automat, &all_positions);
+                let d = automat.ship_hw.scanner.check(automat, &all_positions);
+                automat.ship_hw.scanner.set_detections(d);
             }
         }
         self.step_count += 1;

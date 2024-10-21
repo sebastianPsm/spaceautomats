@@ -2,13 +2,28 @@ use core::f64;
 
 use super::{device::Device, Spaceautomat};
 
+#[derive(Debug, Copy, Clone)]
+pub struct Detection {
+    angle: f64,
+    distance: f64,
+}
+impl Detection {
+    pub fn get_angle(&self) -> f64 {
+        self.angle
+    }
+    pub fn get_distance(&self) -> f64 {
+        self.distance
+    }
+}
+
 pub struct Scanner {
     slot_id: u8,
     enabled: bool,
     aperture_angle: f64,
     max_detection_distance: f64,
     heading: f64,
-    sensitivity: f64
+    sensitivity: f64,
+    detections: Vec<Detection>,
 }
 
 impl Scanner {
@@ -19,7 +34,8 @@ impl Scanner {
             aperture_angle: 0.0,
             max_detection_distance: 0.0,
             heading: 0.0,
-            sensitivity: 0.0
+            sensitivity: 0.0,
+            detections: vec![],
         }
     }
 }
@@ -77,11 +93,23 @@ impl Scanner {
     pub fn get_max_detection_distance(&self) -> f64 {
         self.max_detection_distance
     }
-    pub fn check(&self, ego: &Spaceautomat, all_positions: &Vec<(u32, u32)>) {
+    pub fn set_detections(&mut self, detections: Vec<Detection>) {
+        self.detections = detections;
+    }
+    pub fn get_detections(&self) -> Vec<Detection> {
+        self.detections.clone()
+    }
+    pub fn check(&self, ego: &Spaceautomat, all_positions: &Vec<(u32, u32)>) -> Vec<Detection> {
         let ego_pos = ego.ship_hw.get_pos();
         let ego_dir = ego.ship_hw.get_dir_rad();
         let ego_x = ego_pos.0 as f64;
         let ego_y = ego_pos.1 as f64;
+        let aperture_angle = ego.ship_hw.scanner.get_aperture_angle();
+        let aperture_heading = 2.0*f64::consts::PI + ego.ship_hw.scanner.get_heading();
+        let aperture_angle_1 = aperture_heading - aperture_angle/2.0;
+        let aperture_angle_2 = aperture_angle_1 + aperture_angle;
+
+        let mut result: Vec<Detection> = vec![];
 
         for pos in all_positions {
             let dx = pos.0 as f64 - ego_x;
@@ -90,10 +118,16 @@ impl Scanner {
 
             let absolut = (dy.atan2(dx) + 2.0*f64::consts::PI) % (2.0*f64::consts::PI);
             let relative = ego_dir - absolut;
+            let relative_2pi = relative + 2.0*f64::consts::PI;
 
-            let relative_deg = relative / f64::consts::PI * 180.0;
+            if !(aperture_angle_1 <= relative_2pi && relative_2pi <= aperture_angle_2) { continue; }
 
-            let x = relative_deg+1.0;
+            result.push(Detection {
+                angle: relative,
+                distance: (dx*dx+dy*dy).sqrt(),
+            });
         }
+
+        result
     }
 }

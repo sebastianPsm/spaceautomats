@@ -9,7 +9,7 @@ function init(ship)
 	ship:write(1, 0, 0) -- enable propulsion, forward
 	ship:write(1, 1, 50) -- propulsion power
 
-	ship:write(2, 0, 0) -- enable reaction wheel
+	ship:write(2, 0, 1) -- enable reaction wheel
 	ship:write(2, 1, 1) -- turn
 
 	ship:write(3, 0, 1) -- enable scanner
@@ -23,7 +23,7 @@ end
 t = 0
 function run(ship)
 	t = t + 1
-	if(t > 100)
+	if(t > 200)
 	then
 --		ship:write(1, 1, 0) -- propulsion power off
 		ship:write(2, 1, 0) -- turn off

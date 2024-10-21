@@ -17,23 +17,6 @@ impl Simulation {
             physmodel: Physmodel::new(x, y, seed)
         }
     }
-    /// Loads the Lua code for a automat
-    /// # Example
-    ///
-    /// ```Lua
-    ///-- The init()-function is called once before every simulation
-    ///-- Use init() to configure your space automat.
-    ///function init(training)
-    ///    ship:slot(0, "propulsion")
-    ///    ship:slot(1, "reaction wheels")
-    ///end
-    ///
-    ///-- The run()-function is called in every simulation step
-    ///function run(step)
-    ///    ship:write(1024, 3);
-    ///    ship:write(1025, 255);
-    ///end
-    /// ```
     pub fn load_automat(&mut self, code: &str) {
         let mut sa = Spaceautomat::new();
         let rc = sa.load_code(code);
