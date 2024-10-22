@@ -4,12 +4,16 @@ use super::{device::Device, Spaceautomat};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Detection {
-    angle: f64,
+    angle_relative: f64,
+    angle_absolute: f64,
     distance: f64,
 }
 impl Detection {
-    pub fn get_angle(&self) -> f64 {
-        self.angle
+    pub fn get_angle_r(&self) -> f64 {
+        self.angle_relative
+    }
+    pub fn get_angle_a(&self) -> f64 {
+        self.angle_absolute
     }
     pub fn get_distance(&self) -> f64 {
         self.distance
@@ -123,7 +127,8 @@ impl Scanner {
             if !(aperture_angle_1 <= relative_2pi && relative_2pi <= aperture_angle_2) { continue; }
 
             result.push(Detection {
-                angle: relative,
+                angle_relative: relative,
+                angle_absolute: absolut,
                 distance: (dx*dx+dy*dy).sqrt(),
             });
         }

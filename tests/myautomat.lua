@@ -13,7 +13,7 @@ function init(ship)
 	ship:write(2, 1, 1) -- turn
 
 	ship:write(3, 0, 1) -- enable scanner
-	ship:write(3, 1, 10) -- aperture angle (x/255*360)
+	ship:write(3, 1, 30) -- aperture angle (x/255*360)
 	ship:write(3, 2, 255) -- max. detection distance
 	ship:write(3, 3, 0) -- heading
 	ship:write(3, 4, 255) --sensitivity
@@ -23,7 +23,7 @@ end
 t = 0
 function run(ship)
 	t = t + 1
-	if(t > 200)
+	if(t > 100)
 	then
 --		ship:write(1, 1, 0) -- propulsion power off
 		ship:write(2, 1, 0) -- turn off
