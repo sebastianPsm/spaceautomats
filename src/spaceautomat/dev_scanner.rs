@@ -61,7 +61,7 @@ impl Device for Scanner {
         match addr {
             0 => { self.enabled = (value & 0x01) == 1; }
             1 => { self.aperture_angle = value as f64 * 2.0 * std::f64::consts::PI / std::u8::MAX as f64 }
-            2 => { self.max_detection_distance = 5000.0 * value as f64; }
+            2 => { self.max_detection_distance = 1000.0 * value as f64; }
             3 => { self.heading = value as f64 * 2.0 * std::f64::consts::PI / std::u8::MAX as f64 }
             4 => { self.sensitivity = value as f64 }
             _ => return
@@ -73,10 +73,18 @@ impl Device for Scanner {
             return 0;
         }
 
+        let detects = self.get_detections();
+
         match addr {
-            5 => { return 0 }
-            6 => { return 0 }
-            7 => { return 0 }
+            5 => { return detects.len() as u8 }
+            6 => {
+                    if detects.len() == 0 { return 0; }
+                    return (detects[0].get_distance() / self.max_detection_distance * 255.0) as u8;
+                 }
+            7 => { 
+                    //if detects.len() == 0 { return 0; }
+                    return 0;
+                 }
             8 => { return 0 }
             9 => { return 0 }
             _ => return 0
@@ -115,6 +123,7 @@ impl Scanner {
 
         let mut result: Vec<Detection> = vec![];
 
+        let mut nearest = f64::INFINITY;
         for pos in all_positions {
             let dx = pos.0 as f64 - ego_x;
             let dy = pos.1 as f64 - ego_y;
@@ -123,15 +132,24 @@ impl Scanner {
             let absolut = (dy.atan2(dx) + 2.0*f64::consts::PI) % (2.0*f64::consts::PI);
             let relative = ego_dir - absolut;
             let relative_2pi = relative + 2.0*f64::consts::PI;
+            let distance = (dx*dx+dy*dy).sqrt();
 
+            if distance > self.max_detection_distance { continue; }
             if !(aperture_angle_1 <= relative_2pi && relative_2pi <= aperture_angle_2) { continue; }
 
-            result.push(Detection {
+            let mut index = result.len();
+            if distance < nearest {
+                nearest = distance;
+                index = 0;
+            }
+            result.insert(index, Detection {
                 angle_relative: relative,
                 angle_absolute: absolut,
-                distance: (dx*dx+dy*dy).sqrt(),
+                distance: distance,
             });
         }
+
+        result.truncate(5);
 
         result
     }

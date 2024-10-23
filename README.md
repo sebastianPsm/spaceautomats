@@ -33,7 +33,7 @@ A propulsion device comes with a fuel tank and drives your ship.
     ship.slot(1, 'propulsion')
     ship.write(1, 1, 255) -- Set max. to the Power memory address
 
-*run()* 
+*run()*
 
     ship.write(1, 0, 3) -- Set the Enabled- and Forward-flag from the Ctrl memory addres
     b1 = ship.read(1, 2) -- Read all 4 fuel bytes and put them together
@@ -53,21 +53,36 @@ A reaction wheel device rotates the ship.
 
 ### Scanner ('scanner')
 
-A scanner is able to detect objects in the surrounding area. 
+A scanner is able to detect objects in the surrounding area. A scanner provides up to 5 detections. The
+closest detection is 'Detection#1'.
+
+Scalings:
+- Distance: 0 .. 255 (max. detections distance)
+- Angle:
+-- 0: In front of the aperture
+-- 127: On the left of the aperture
+-- -127: On the right of the aperture
 
 | Offset | Name                    | r/w | Description
 |--------|-------------------------|-----|-----------------
 | 0      | Ctrl                    | w   | Bit 0: Enabled
 | 1      | Aperture angle          | w   | Aperture angle of the scanner
-| 2      | Max. detection distance | w   | Max. detection distance of the scanner
+| 2      | Max. detection distance | w   | Max. detection distance of the scanner * 1000
 | 3      | Heading                 | w   | Heading offset of the scanner
 | 4      | Sensitivity             | w   | Sensitivity of the scanner
-| 5      | Detection#1             | r   | Object with the strongest signature
-| 6      | Detection#2             | r   | Object with the 2nd strongest signature
-| 7      | Detection#3             | r   | Object with the 3rd strongest signature
-| 8      | Detection#4             | r   | Object with the 4th strongest signature
-| 9      | Boundary detector       | r   | Detects the boundary
-
+| 5      | No of detections        | r   | 0 .. 5
+| 6      | Detection#1             | r   | Detection#1 distance
+| 7      | Detection#1             | r   | Detection#1 angle
+| 8      | Detection#2             | r   | Detection#2 distance
+| 9      | Detection#2             | r   | Detection#2 angle
+| 10     | Detection#3             | r   | Detection#3 distance
+| 11     | Detection#3             | r   | Detection#3 angle
+| 12     | Detection#4             | r   | Detection#4 distance
+| 13     | Detection#4             | r   | Detection#4 angle
+| 14     | Detection#5             | r   | Detection#5 distance
+| 15     | Detection#5             | r   | Detection#5 angle
+| 16     | Boundary                | r   | Boundary distance
+| 17     | Boundary                | r   | Boundary angle
 #### Example
 
 *init()*
