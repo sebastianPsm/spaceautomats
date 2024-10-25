@@ -23,11 +23,17 @@ end
 t = 0
 function run(ship)
 	t = t + 1
-	if(t > 100)
-	then
---		ship:write(1, 1, 0) -- propulsion power off
+	if(t > 100) 	then
+--		ship:write	(1, 1, 0) -- propulsion power off
 		ship:write(2, 1, 0) -- turn off
 --		ship:write(3, 1, 255-t%255) -- aperture angle (x/255*360)
 --		ship:write(3, 3, t%255) -- scanner heading
 	end
+    
+    -- Scan
+    nDetections = ship:read(3, 5)
+    for idx=1,nDetections do
+        distance = ship:read(3, 5+idx)
+        angle = ship:read(3, 6+idx)
+    end
 end

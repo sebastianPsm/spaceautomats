@@ -75,18 +75,25 @@ impl Device for Scanner {
 
         let detects = self.get_detections();
 
+        let addr = addr as usize;
         match addr {
             5 => { return detects.len() as u8 }
-            6 => {
-                    if detects.len() == 0 { return 0; }
-                    return (detects[0].get_distance() / self.max_detection_distance * 255.0) as u8;
-                 }
-            7 => { 
-                    //if detects.len() == 0 { return 0; }
-                    return 0;
-                 }
-            8 => { return 0 }
-            9 => { return 0 }
+            6 | 8 | 10 | 12 | 14 => {
+                let idx = (addr-4) / 2;
+                if detects.len() < idx { return 0; }
+
+                let distance = (detects[idx-1].get_distance() / self.max_detection_distance * 255.0) as u8;
+                return distance;
+            }
+            7 | 9 | 11 | 13 | 15 => {
+                let idx = (addr-5) / 2;
+                if detects.len() < idx { return 0; }
+
+                let angle_norm = 0.5 + detects[idx-1].get_angle_r() / self.aperture_angle;
+                let angle_norm_u8 = (angle_norm*255.0).ceil() as u8;
+
+                return angle_norm_u8;
+            }
             _ => return 0
         }
     }
