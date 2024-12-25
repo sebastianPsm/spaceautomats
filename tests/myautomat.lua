@@ -1,3 +1,18 @@
+function turn(ship, value)
+    if value < -255 then
+        value = -255
+    elseif value > 255 then
+        value = 255
+    end
+
+    if value < 0 then
+        ship:write(2, 0, 3)
+    else
+        ship:write(2, 0, 1)
+    end
+	ship:write(2, 1, math.abs(value))
+end
+
 -- The init()-function is called once before every simulation
 --  Use init() to configure your space automat.
 function init(ship)
@@ -9,23 +24,22 @@ function init(ship)
 	ship:write(1, 0, 0) -- enable propulsion, forward
 	ship:write(1, 1, 50) -- propulsion power
 
-	ship:write(2, 0, 1) -- enable reaction wheel
-	ship:write(2, 1, 1) -- turn
+    turn(ship, 1)
 
 	ship:write(3, 0, 1) -- enable scanner
-	ship:write(3, 1, 30) -- aperture angle (x/255*360)
+	ship:write(3, 1, 100) -- aperture angle (x/255*360)
 	ship:write(3, 2, 255) -- max. detection distance
 	ship:write(3, 3, 0) -- heading
-	ship:write(3, 4, 255) --sensitivity
 end
+
 
 -- The run()-function is called in every simulation step
 t = 0
 function run(ship)
 	t = t + 1
-	if(t > 100) 	then
+	if t > 100 then
 --		ship:write	(1, 1, 0) -- propulsion power off
-		ship:write(2, 1, 0) -- turn off
+        turn(ship, 0)
 --		ship:write(3, 1, 255-t%255) -- aperture angle (x/255*360)
 --		ship:write(3, 3, t%255) -- scanner heading
 	end
@@ -35,5 +49,7 @@ function run(ship)
     for idx=1,nDetections do
         distance = ship:read(3, 5+idx)
         angle = ship:read(3, 6+idx)
+
+        turn(ship, 0.5*angle)
     end
 end

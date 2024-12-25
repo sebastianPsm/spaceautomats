@@ -4,7 +4,7 @@ mod dev_propulsion;
 mod dev_reaction_wheel;
 mod dev_scanner;
 
-use mlua::{Function, Lua};
+use mlua::{Function, Lua, LuaOptions, StdLib};
 use crate::spaceautomat::ship::Ship;
 
 #[derive(Debug, Copy, Clone)]
@@ -17,7 +17,7 @@ pub struct Spaceautomat {
     lua: Lua,
     step_count: u64,
     pub ship_hw: Ship,
-    state: State,
+    state: State
 }
 
 pub enum ReturnCode {
@@ -31,13 +31,13 @@ pub enum ReturnCode {
 
 impl Spaceautomat {
     pub fn new() -> Spaceautomat {
-        let lua = Lua::new();
+        let lua = Lua::new_with(StdLib::MATH, LuaOptions::new()).unwrap();
 
         Spaceautomat {
             lua,
             step_count: 0,
             ship_hw: Ship::new(),
-            state: State::Init,
+            state: State::Init
         }
     }
     /// Load Lua code and checks if init() and run() are available
