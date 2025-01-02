@@ -1,4 +1,4 @@
-mod spaceautomat;
+pub mod spaceautomat;
 mod physmodel;
 
 use spaceautomat::ReturnCode;

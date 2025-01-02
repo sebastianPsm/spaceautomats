@@ -7,10 +7,11 @@ mod dev_scanner;
 use mlua::{Function, Lua, LuaOptions, StdLib};
 use crate::spaceautomat::ship::Ship;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub enum State {
-    Init = 1,
-    Run = 2
+    Init,
+    Run,
+    Error(String)
 }
 
 pub struct Spaceautomat {
@@ -85,7 +86,8 @@ impl Spaceautomat {
     pub fn is_initialized(&self) -> bool {
         match self.state {
             State::Init => { return false },
-            State::Run => { return true }
+            State::Run => { return true },
+            State::Error(_) => { return false }
         }
     }
     /// Calls the run()-function from the loaded code once
@@ -97,15 +99,25 @@ impl Spaceautomat {
             let res = run_fcn.call::<_, bool>(ship_userdata);
             return res;
         });
-        if result.is_err() {
-            result.unwrap();
-            return ReturnCode::RunFcnCall;
+        match result {
+            Ok(_) => {
+                self.step_count += 1;
+                return ReturnCode::Ok;
+            },
+            Err(err) => {
+                self.set_error(err.to_string());
+                return ReturnCode::RunFcnCall;
+            }
         }
-        self.step_count += 1;
-        return ReturnCode::Ok;
     }
     /// Get the number of performed simulation steps
     pub fn get_step_count(&self) -> u64 {
         return self.step_count;
+    }
+    pub fn get_state(&self) -> State {
+        self.state.clone()
+    }
+    pub fn set_error(&mut self, info: String) {
+        self.state = State::Error(info);
     }
 }

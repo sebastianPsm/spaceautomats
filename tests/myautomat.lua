@@ -13,6 +13,25 @@ function turn(ship, value)
 	ship:write(2, 1, math.abs(value))
 end
 
+function scan(ship)
+	-- Scan
+    nDetections = ship:read(3, 5)
+	minDistance = #INF
+	hasAngle = false
+	angle = 0
+
+    for idx=1,nDetections do
+        d = ship:read(3, 5+idx)
+        a = ship:read(3, 6+idx)
+        
+    end
+
+
+	-- ship:write(3, 1, 500) -- angle
+--		ship:write(3, 1, 255-t%255) -- aperture angle (x/255*360)
+--		ship:write(3, 3, t%255) -- scanner heading
+end
+
 -- The init()-function is called once before every simulation
 --  Use init() to configure your space automat.
 function init(ship)
@@ -24,7 +43,7 @@ function init(ship)
 	ship:write(1, 0, 0) -- enable propulsion, forward
 	ship:write(1, 1, 50) -- propulsion power
 
-    turn(ship, 1)
+    turn(ship, 0)
 
 	ship:write(3, 0, 1) -- enable scanner
 	ship:write(3, 1, 100) -- aperture angle (x/255*360)
@@ -37,19 +56,5 @@ end
 t = 0
 function run(ship)
 	t = t + 1
-	if t > 100 then
---		ship:write	(1, 1, 0) -- propulsion power off
-        turn(ship, 0)
---		ship:write(3, 1, 255-t%255) -- aperture angle (x/255*360)
---		ship:write(3, 3, t%255) -- scanner heading
-	end
-    
-    -- Scan
-    nDetections = ship:read(3, 5)
-    for idx=1,nDetections do
-        distance = ship:read(3, 5+idx)
-        angle = ship:read(3, 6+idx)
 
-        turn(ship, 0.5*angle)
-    end
 end
