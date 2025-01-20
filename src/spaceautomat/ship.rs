@@ -25,7 +25,8 @@ pub struct Ship {
     dir: u16, // direction in deg*10 (0..3599)
     angular_velocity: f64,
     name: String,
-    health: u16
+    health: u16,
+    log: String,
 }
 
 impl Ship {
@@ -42,6 +43,7 @@ impl Ship {
             angular_velocity: 0.0,
             name: "MyShip".to_string(),
             health: u16::MAX,
+            log: "".to_string(),
         }
     }
     /// Get position
@@ -101,6 +103,12 @@ impl Ship {
     pub fn get_health(&self) -> u16 {
         self.health
     }
+    pub fn add_log_msg(&mut self, msg: &String) {
+        self.log.push_str(msg);
+    }
+    pub fn get_log(&self) -> String {
+        self.log.clone()
+    }
 }
 impl UserData for Ship {
     fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
@@ -148,6 +156,10 @@ impl UserData for Ship {
                 }
             }
             Ok(0)
-        })
+        });
+        methods.add_method_mut("log", |_, ship, msg: String|{
+            ship.add_log_msg(&msg);
+            Ok(0)
+        });
     }
 }

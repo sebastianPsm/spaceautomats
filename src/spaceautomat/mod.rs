@@ -10,7 +10,7 @@ use crate::spaceautomat::ship::Ship;
 #[derive(Debug, Clone)]
 pub enum State {
     Init,
-    Run,
+    Run(String),
     Error(String)
 }
 
@@ -32,7 +32,7 @@ pub enum ReturnCode {
 
 impl Spaceautomat {
     pub fn new() -> Spaceautomat {
-        let lua = Lua::new_with(StdLib::MATH, LuaOptions::new()).unwrap();
+        let lua = Lua::new_with(StdLib::MATH|StdLib::STRING, LuaOptions::new()).unwrap();
 
         Spaceautomat {
             lua,
@@ -79,14 +79,14 @@ impl Spaceautomat {
             return ReturnCode::InitFcnCall;
         }
 
-        self.state = State::Run;
+        self.state = State::Run(String::new());
         return ReturnCode::Ok;
     }
     /// Returns the initialization state
     pub fn is_initialized(&self) -> bool {
         match self.state {
             State::Init => { return false },
-            State::Run => { return true },
+            State::Run(_) => { return true },
             State::Error(_) => { return false }
         }
     }
@@ -102,10 +102,19 @@ impl Spaceautomat {
         match result {
             Ok(_) => {
                 self.step_count += 1;
+                let mut infomsg = String::new();
+                infomsg.push_str("--- Log ---\n");
+                infomsg.push_str(&(self.ship_hw.get_log()));
+                self.state = State::Run(infomsg.to_string());
                 return ReturnCode::Ok;
             },
             Err(err) => {
-                self.set_error(err.to_string());
+                let mut errmsg = String::new();
+                errmsg.push_str("--- Log ---\n");
+                errmsg.push_str(&(self.ship_hw.get_log()));
+                errmsg.push_str("\n\n--- Lua error ---\n");
+                errmsg.push_str(&(err.to_string()));
+                self.set_error(errmsg.to_string());
                 return ReturnCode::RunFcnCall;
             }
         }

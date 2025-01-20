@@ -77,6 +77,8 @@ impl Device for Scanner {
 
         let addr = addr as usize;
         match addr {
+            1 => { return (self.aperture_angle / 2.0 / std::f64::consts::PI * std::u8::MAX as f64) as u8; }
+            3 => { return (self.heading / 2.0 / std::f64::consts::PI * std::u8::MAX as f64) as u8; }
             5 => { return detects.len() as u8 }
             6 | 8 | 10 | 12 | 14 => {
                 let idx = (addr-4) / 2;

@@ -14,22 +14,39 @@ function turn(ship, value)
 end
 
 function scan(ship)
-	-- Scan
-    nDetections = ship:read(3, 5)
-	minDistance = #INF
-	hasAngle = false
-	angle = 0
+    -- Scan
+    nDetections = ship:read(3, 5) -- get number of detections
+    minDistance = 100000000
+    hasAngle = false
+    angle = 0
+    ship:log(string.format("nDetections: %d\n", nDetections))
 
     for idx=1,nDetections do
-        d = ship:read(3, 5+idx)
-        a = ship:read(3, 6+idx)
-        
+        d = ship:read(3, 5+idx) -- get detection distance
+        a = ship:read(3, 6+idx) -- get detection angle (0..255, right to left))
+		if d < minDistance then
+            minDistance = d
+            angle = a
+            hasAngle = true
+        end
+    end
+    if not hasAngle then
+        return
     end
 
+    -- Get absolut position of detection
+    aperturAngle = ship:read(3, 1) / 255 * 360
+    detectionAngle = angle / 255 * aperturAngle
+    detectionAngle = detectionAngle - aperturAngle / 2
+    ship:log(string.format("angle: %.2f, %.2f\n", detectionAngle, aperturAngle))
 
-	-- ship:write(3, 1, 500) -- angle
+    curHead = ship:read(3, 3, 5) -- get current heading (0..255)
+
+
+    ship:write(3, 3, 0) -- scanner heading
+--	ship:write(3, 1, 5) -- angle
 --		ship:write(3, 1, 255-t%255) -- aperture angle (x/255*360)
---		ship:write(3, 3, t%255) -- scanner heading
+    
 end
 
 -- The init()-function is called once before every simulation
@@ -46,7 +63,7 @@ function init(ship)
     turn(ship, 0)
 
 	ship:write(3, 0, 1) -- enable scanner
-	ship:write(3, 1, 100) -- aperture angle (x/255*360)
+	ship:write(3, 1, 127) -- aperture angle (x/255*360)
 	ship:write(3, 2, 255) -- max. detection distance
 	ship:write(3, 3, 0) -- heading
 end
@@ -56,5 +73,5 @@ end
 t = 0
 function run(ship)
 	t = t + 1
-
+    scan(ship)
 end
