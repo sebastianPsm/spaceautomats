@@ -46,14 +46,25 @@ impl Physmodel {
         }
 
         for automat in automats.iter_mut() {
+            let mut fuel: u32 = automat.ship_hw.propulsion.get_fuel();
+
+            /*
+             * Scanner (scan before move)
+             */
+            if automat.ship_hw.scanner.get_enabled() {
+                fuel = fuel - 1;
+                let d = automat.ship_hw.scanner.check(automat, &all_positions);
+                automat.ship_hw.scanner.set_detections(d);
+            }
+
             /*
              * Propulsion
              */
             let propulsion_enabled = automat.ship_hw.propulsion.get_enabled();
-            let mut fuel: u32 = automat.ship_hw.propulsion.get_fuel();
             let mut power: f64 = 0.0;
 
             if propulsion_enabled {
+                fuel = fuel - 1;
                 let power_value = automat.ship_hw.propulsion.get_power();    
                 if power_value > 0 && fuel >= u32::from(power_value) {
                     fuel = fuel-u32::from(power_value);
@@ -71,6 +82,7 @@ impl Physmodel {
             let mut ang_accel: f64 = 0.0;
 
             if reaction_wheel_enabled {
+                fuel = fuel - 1;
                 let power_value = automat.ship_hw.reaction_wheel.get_power();
                 if power_value > 0 && fuel >= u32::from(power_value) {
                     fuel = fuel-u32::from(power_value);
@@ -79,6 +91,7 @@ impl Physmodel {
                     let counterclock = automat.ship_hw.reaction_wheel.get_counterclock();
                     ang_accel = f64::from(power_value) * if counterclock {1.0} else {-1.0} / 10000.0;
                 }
+                
             }
 
             let m = ang_accel / self.i;
@@ -94,6 +107,10 @@ impl Physmodel {
 
             let mut s_new = (s.0 + v.0 * self.t + a.0 * self.t*self.t, 
                                          s.1 + v.1 * self.t + a.1 * self.t*self.t);
+            
+            if reaction_wheel_enabled {
+                automat.ship_hw.reaction_wheel.set_angular_velocity(angular_velo_new);
+            }
 
             /*
              * Boundary
@@ -110,13 +127,7 @@ impl Physmodel {
             automat.ship_hw.set_speed(v_new);
             automat.ship_hw.set_pos((s_new.0 as u32, s_new.1 as u32));
 
-            /*
-             * Scanner
-             */
-            if automat.ship_hw.scanner.get_enabled() {
-                let d = automat.ship_hw.scanner.check(automat, &all_positions);
-                automat.ship_hw.scanner.set_detections(d);
-            }
+            
         }
         self.step_count += 1;
     }

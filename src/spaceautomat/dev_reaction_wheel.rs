@@ -5,6 +5,7 @@ pub struct ReactionWheel {
     enabled: bool,
     counterclock: bool,
     power: u8,
+    angular_velo: u8,
 }
 
 impl ReactionWheel {
@@ -14,6 +15,7 @@ impl ReactionWheel {
             enabled: false,
             counterclock: false,
             power: 0,
+            angular_velo: 0
         }
     }
 }
@@ -58,5 +60,8 @@ impl ReactionWheel {
     }
     pub fn get_counterclock(&self) -> bool {
         self.counterclock
+    }
+    pub fn set_angular_velocity(&mut self, angular_velo: f64) {
+        
     }
 }

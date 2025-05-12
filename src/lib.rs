@@ -1,6 +1,8 @@
 pub mod spaceautomat;
 mod physmodel;
 
+use std::path::PathBuf;
+
 use spaceautomat::ReturnCode;
 use crate::spaceautomat::Spaceautomat;
 use crate::physmodel::Physmodel;
@@ -15,6 +17,12 @@ impl Simulation {
         Simulation {
             automats: Vec::new(),
             physmodel: Physmodel::new(x, y, seed)
+        }
+    }
+    pub fn load_automat_by_file(&mut self, file_path: &PathBuf) {
+        let code = std::fs::read_to_string(&file_path);
+        if let Some(code) = code.ok() {
+            self.load_automat(&code);
         }
     }
     pub fn load_automat(&mut self, code: &str) {

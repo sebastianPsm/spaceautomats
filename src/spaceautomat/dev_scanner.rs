@@ -123,8 +123,6 @@ impl Scanner {
     pub fn check(&self, ego: &Spaceautomat, all_positions: &Vec<(u32, u32)>) -> Vec<Detection> {
         let ego_pos = ego.ship_hw.get_pos();
         let ego_dir = ego.ship_hw.get_dir_rad();
-        let ego_x = ego_pos.0 as f64;
-        let ego_y = ego_pos.1 as f64;
         let aperture_angle = ego.ship_hw.scanner.get_aperture_angle();
         let aperture_heading = 2.0*f64::consts::PI + ego.ship_hw.scanner.get_heading();
         let aperture_angle_1 = aperture_heading - aperture_angle/2.0;
@@ -134,14 +132,14 @@ impl Scanner {
 
         let mut nearest = f64::INFINITY;
         for pos in all_positions {
-            let dx = pos.0 as f64 - ego_x;
-            let dy = pos.1 as f64 - ego_y;
-            if dx == 0.0 && dy == 0.0 { continue; }
+            if pos.0 == ego_pos.0 && pos.1 == ego_pos.1 { continue; }
+            let dx = pos.0 as f64 - ego_pos.0 as f64;
+            let dy = pos.1 as f64 - ego_pos.1 as f64;
 
             let absolut = (dy.atan2(dx) + 2.0*f64::consts::PI) % (2.0*f64::consts::PI);
             let relative = ego_dir - absolut;
             let relative_2pi = relative + 2.0*f64::consts::PI;
-            let distance = (dx*dx+dy*dy).sqrt();
+            let distance = (dx.powi(2)+dy.powi(2)).sqrt();
 
             if distance > self.max_detection_distance { continue; }
             if !(aperture_angle_1 <= relative_2pi && relative_2pi <= aperture_angle_2) { continue; }

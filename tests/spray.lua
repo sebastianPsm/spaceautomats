@@ -1,15 +1,17 @@
--- Global variables
-global_t = 0
-
 function turn(ship, value)
-	ship:log(string.format("turn: %.2f\n", value))
-    value = (value < -255) and -255 or value
-    value = (value > 255) and 255 or value
-	
-    ship:write(2, 0, value < 0 and 3 or 1)
+    if value < -255 then
+        value = -255
+    elseif value > 255 then
+        value = 255
+    end
+
+    if value < 0 then
+        ship:write(2, 0, 3)
+    else
+        ship:write(2, 0, 1)
+    end
 	ship:write(2, 1, math.abs(value))
 end
-
 
 function scan(ship)
     -- Scan
@@ -51,16 +53,16 @@ end
 -- The init()-function is called once before every simulation
 --  Use init() to configure your space automat.
 function init(ship)
-    ship:name("myautomat")
+    ship:name("spray")
     ship:slot(1, "propulsion")
     ship:slot(2, "reaction wheel")
     ship:slot(3, "scanner")
 
 	ship:write(1, 0, 3)
  -- enable propulsion, forward
-	ship:write(1, 1, 0) -- propulsion power
+	ship:write(1, 1, 255) -- propulsion power
 
-	turn(ship, 1)
+    turn(ship, 1)
 
 	ship:write(3, 0, 1) -- enable scanner
 	ship:write(3, 1, 127) -- aperture angle (x/255*360)
@@ -70,14 +72,8 @@ end
 
 
 -- The run()-function is called in every simulation step
+t = 0
 function run(ship)
-	global_t = global_t + 1
+	t = t + 1
     scan(ship)
-
-    if global_t > 100 then
-		turn(ship, -1)
-	end
-	if global_t > 200 then
-		turn(ship, 0)
-	end
 end
