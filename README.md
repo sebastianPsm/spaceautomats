@@ -50,6 +50,12 @@ A reaction wheel device rotates the ship.
 |--------   |-------   |-----   |--------------------------------------------------------- |
 | 0         | Ctrl     | w      | Bit 0: Enabled<br>Bit 1: Rotate counter-clockwise if set |
 | 1         | Power    | w      | Power level (0..255)                                     |
+| 2         | Dir      | r      | 0 if rotation is clockwise, 1 if counter-clockwise       |
+| 3         | Ang velo | r      | LSByte                                                   |
+| 4         | Ang velo | r      |         Angular velocity in µrad/step                    |
+| 5         | Ang velo | r      |                                                          |
+| 6         | Ang velo | r      | MSByte                                                   |
+
 
 ### Scanner ('scanner')
 

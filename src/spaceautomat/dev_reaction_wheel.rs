@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use super::device::Device;
 
 pub struct ReactionWheel {
@@ -5,7 +7,8 @@ pub struct ReactionWheel {
     enabled: bool,
     counterclock: bool,
     power: u8,
-    angular_velo: u8,
+    angular_velo: [u8; 4],
+    angular_velo_counterclock: bool,
 }
 
 impl ReactionWheel {
@@ -15,7 +18,8 @@ impl ReactionWheel {
             enabled: false,
             counterclock: false,
             power: 0,
-            angular_velo: 0
+            angular_velo: [0, 0, 0, 0],
+            angular_velo_counterclock: false
         }
     }
 }
@@ -47,6 +51,11 @@ impl Device for ReactionWheel {
         }
 
         match addr {
+            2 => { return self.angular_velo_counterclock as u8; }
+            3 => { return self.angular_velo[0]; }
+            4 => { return self.angular_velo[1]; }
+            5 => { return self.angular_velo[2]; }
+            6 => { return self.angular_velo[3]; }
             _ => return 0
         }
     }
@@ -62,6 +71,9 @@ impl ReactionWheel {
         self.counterclock
     }
     pub fn set_angular_velocity(&mut self, angular_velo: f64) {
-        
+        if angular_velo < 0.0 {
+            self.angular_velo_counterclock = true;
+        }
+        self.angular_velo = ((angular_velo as f32).abs().mul(1000000.0).clamp(0.0, 1000000.0) as u32).to_le_bytes(); // in µrad/step
     }
 }

@@ -2,12 +2,22 @@
 global_t = 0
 
 function turn(ship, value)
-	ship:log(string.format("turn: %.2f\n", value))
     value = (value < -255) and -255 or value
     value = (value > 255) and 255 or value
 	
     ship:write(2, 0, value < 0 and 3 or 1)
 	ship:write(2, 1, math.abs(value))
+end
+function turn_stop(ship)
+    counter_clock = ship:read(2, 2)
+    ang_velo_1 = ship:read(2, 3) << 0
+    ang_velo_2 = ship:read(2, 4) << 8
+    ang_velo_3 = ship:read(2, 5) << 16
+    ang_velo_4 = ship:read(2, 6) << 24
+    ang_velo = (ang_velo_1 + ang_velo_2 + ang_velo_3 + ang_velo_4) / 1000.0 + 0.5
+    ship:log(string.format("ang_velo: %.4f\n", ang_velo))
+
+    turn(ship, counter_clock and -ang_velo or ang_velo)
 end
 
 
@@ -74,10 +84,7 @@ function run(ship)
 	global_t = global_t + 1
     scan(ship)
 
-    if global_t > 100 then
-		turn(ship, -1)
-	end
-	if global_t > 200 then
-		turn(ship, 0)
-	end
+    if global_t > 300 then
+		turn_stop(ship)
+	end	
 end
