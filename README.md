@@ -17,14 +17,20 @@ The following devices are available:
 
 A propulsion device comes with a fuel tank and drives your ship.
 
-| Offset    | Name     | r/w    | Description                                       |
-|--------   |-------   |-----   |------------------------------------------------   |
-| 0         | Ctrl     | w      | Bit 0: Enabled<br>Bit 1: Forward                  |
-| 1         | Power    | w      | Power level (0..255)                              |
-| 2         | Fuel     | r      | Fuel level (Bit 0..7, least significant octet)    |
-| 3         | Fuel     | r      | Fuel level (Bit 8..15)                            |
-| 4         | Fuel     | r      | Fuel level (Bit 16..23)                           |
-| 5         | Fuel     | r      | Fuel level (Bit 24..31)                           |
+| Offset    | Name     | r/w    | Description                                         |
+|--------   |-------   |-----   |------------------------------------------------     |
+| 0         | Ctrl     | w      | Bit 0: Enabled<br>Bit 1: Forward                    |
+| 1         | Power    | w      | Power level (0..255)                                |
+| 2         | Fuel     | r      | Fuel level (Bit 0..7, least significant octet)      |
+| 3         | Fuel     | r      | Fuel level (Bit 8..15)                              |
+| 4         | Fuel     | r      | Fuel level (Bit 16..23)                             |
+| 5         | Fuel     | r      | Fuel level (Bit 24..31)                             |
+| 6         | Velocity | r      | Velocity (Bit 0..7, least significant octet)        |
+| 7         | Velocity | r      | Velocity (Bit 8..15)  -signed-                      |
+| 8         | Headingo | r      | Heading in µrad (Bit 0..7, least significant octet) |
+| 9         | Headingo | r      | Heading in µrad (Bit 8..15)  -unsigned-             |
+| 10        | Headingo | r      | Heading in µrad (Bit 16..23)                        |
+| 11        | Headingo | r      | Heading in µrad (Bit 24..31)                        |
 
 #### Example
 
@@ -46,15 +52,15 @@ A propulsion device comes with a fuel tank and drives your ship.
 
 A reaction wheel device rotates the ship.
 
-| Offset    | Name     | r/w    | Description                                              |
-|--------   |-------   |-----   |--------------------------------------------------------- |
-| 0         | Ctrl     | w      | Bit 0: Enabled<br>Bit 1: Rotate counter-clockwise if set |
-| 1         | Power    | w      | Power level (0..255)                                     |
-| 2         | Dir      | r      | 0 if rotation is clockwise, 1 if counter-clockwise       |
-| 3         | Ang velo | r      | LSByte                                                   |
-| 4         | Ang velo | r      |         Angular velocity in µrad/step                    |
-| 5         | Ang velo | r      |                                                          |
-| 6         | Ang velo | r      | MSByte                                                   |
+| Offset    | Name     | r/w    | Description                                                       |
+|--------   |-------   |-----   |-------------------------------------------------------------------|
+| 0         | Ctrl     | w      | Bit 0: Enabled<br>Bit 1: Rotate counter-clockwise if set          |
+| 1         | Power    | w      | Power level (0..255)                                              |
+| 2         | Dir      | r      | 0 if rotation is clockwise, 1 if counter-clockwise                |
+| 3         | Ang velo | r      | Angular velocity in µrad/step (Bit 0..7, least significant octet) |
+| 4         | Ang velo | r      | Angular velocity in µrad/step (Bit 8..15)  -unsigned-             |
+| 5         | Ang velo | r      | Angular velocity in µrad/step (Bit 16..23)                        |
+| 6         | Ang velo | r      | Angular velocity in µrad/step (Bit 24..31)                        |
 
 
 ### Scanner ('scanner')

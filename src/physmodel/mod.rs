@@ -94,6 +94,9 @@ impl Physmodel {
                 
             }
 
+            /*
+             * Kinematics
+             */
             let m = ang_accel / self.i;
             let dir: f64 = automat.ship_hw.get_dir_rad();
             let angular_velo = automat.ship_hw.get_angular_velocity_rad();
@@ -108,10 +111,6 @@ impl Physmodel {
             let mut s_new = (s.0 + v.0 * self.t + a.0 * self.t*self.t, 
                                          s.1 + v.1 * self.t + a.1 * self.t*self.t);
             
-            if reaction_wheel_enabled {
-                automat.ship_hw.reaction_wheel.set_angular_velocity(angular_velo_new);
-            }
-
             /*
              * Boundary
              */             
@@ -127,6 +126,12 @@ impl Physmodel {
             automat.ship_hw.set_speed(v_new);
             automat.ship_hw.set_pos((s_new.0 as u32, s_new.1 as u32));
 
+            if reaction_wheel_enabled {
+                automat.ship_hw.reaction_wheel.set_angular_velocity(angular_velo_new);
+            }
+            if propulsion_enabled {
+                automat.ship_hw.propulsion.set_velocity(v_new, dir_new);
+            }
             
         }
         self.step_count += 1;

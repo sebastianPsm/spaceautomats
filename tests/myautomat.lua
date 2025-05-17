@@ -15,7 +15,6 @@ function turn_stop(ship)
     ang_velo_3 = ship:read(2, 5) << 16
     ang_velo_4 = ship:read(2, 6) << 24
     ang_velo = (ang_velo_1 + ang_velo_2 + ang_velo_3 + ang_velo_4) / 1000.0 + 0.5
-    ship:log(string.format("ang_velo: %.4f\n", ang_velo))
 
     turn(ship, counter_clock and -ang_velo or ang_velo)
 end

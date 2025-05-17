@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use super::device::Device;
 
 pub struct Propulsion {
@@ -6,6 +8,8 @@ pub struct Propulsion {
     forward: bool,
     fuel: u32,
     power: u8,
+    velocity: [u8; 2],
+    direction: [u8; 4]
 }
 
 impl Propulsion {
@@ -16,6 +20,8 @@ impl Propulsion {
             forward: true,
             fuel: 0,
             power: 0,
+            velocity: [0, 0],
+            direction: [0, 0, 0, 0]
         }
     }
 }
@@ -48,10 +54,16 @@ impl Device for Propulsion {
         }
 
         match addr {
-            0 => { return (self.fuel & 0x000000FF >>  0) as u8 }
-            1 => { return (self.fuel & 0x0000FF00 >>  8) as u8 }
-            2 => { return (self.fuel & 0x00FF0000 >> 16) as u8 }
-            3 => { return (self.fuel & 0xFF000000 >> 24) as u8 }
+            2 => { return (self.fuel & 0x000000FF >>  0) as u8 }
+            3 => { return (self.fuel & 0x0000FF00 >>  8) as u8 }
+            4 => { return (self.fuel & 0x00FF0000 >> 16) as u8 }
+            5 => { return (self.fuel & 0xFF000000 >> 24) as u8 }
+            6 => { return self.velocity[0] }
+            7 => { return self.velocity[1] }
+            8 => { return self.direction[0] }
+            9 => { return self.direction[1] }
+            10 => { return self.direction[2] }
+            11 => { return self.direction[3] }
             _ => return 0
         }
     }
@@ -71,5 +83,11 @@ impl Propulsion {
     }
     pub fn get_forward(&self) -> bool {
         self.forward
+    }
+    pub fn set_velocity(&mut self, velocity: (f64, f64), direction: f64) {
+        let velocity = (velocity.0.powi(2) + velocity.1.powi(2)).sqrt();
+        self.velocity = (velocity.clamp(i16::MIN as f64, i16::MAX as f64) as i16).to_le_bytes();        
+        self.direction = (direction.mul(1000000.0).clamp(0.0, 1000000.0) as u32).to_le_bytes(); // in µrad
+
     }
 }
