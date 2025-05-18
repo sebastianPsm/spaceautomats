@@ -1,24 +1,42 @@
 -- Global variables
 global_t = 0
 
-function turn(ship, value)
-    value = (value < -255) and -255 or value
-    value = (value > 255) and 255 or value
+function accelerate(ship, power, thresh)
+	velo_1 = ship:read(1, 6) << 0
+	velo_2 = ship:read(1, 7) << 8
+	velo = velo_1 + velo_2 -- current velocity
+
+	ship:write(1, 0, 0) -- diable propulsion
+	ship:write(1, 1, 0) -- propulsion power
+	if velo < thresh then
+		ship:write(1, 0, 3) -- enable propulsion, forward
+		ship:write(1, 1, power) -- propulsion power
+	elseif velo > thresh then
+		ship:write(1, 0, 1) -- enable propulsion, backward
+		ship:write(1, 1, power) -- propulsion power
+	end    
+end
+
+function turn(ship, power, heading)
+	head_1 = ship:read(1, 8) << 0
+	head_2 = ship:read(1, 9) << 8
+	head_3 = ship:read(1, 10) << 16
+	head_4 = ship:read(1, 11) << 24
+	curr_heading = (head_1 + head_2 + head_3 + head_4) / 1E6 -- current heading
+	d_head = ((curr_heading - heading) + 2*math.pi)%math.pi -- heading delta
+
 	
-    ship:write(2, 0, value < 0 and 3 or 1)
-	ship:write(2, 1, math.abs(value))
-end
-function turn_stop(ship)
-    counter_clock = ship:read(2, 2)
-    ang_velo_1 = ship:read(2, 3) << 0
-    ang_velo_2 = ship:read(2, 4) << 8
-    ang_velo_3 = ship:read(2, 5) << 16
-    ang_velo_4 = ship:read(2, 6) << 24
-    ang_velo = (ang_velo_1 + ang_velo_2 + ang_velo_3 + ang_velo_4) / 1000.0 + 0.5
 
-    turn(ship, counter_clock and -ang_velo or ang_velo)
+    ship:write(2, 0, 0) -- disable reaction wheel
+	ship:write(2, 1, 0) -- turn power
+	if d_head > math.pi then
+	    ship:write(2, 0, 1)
+		ship:write(2, 1, power)
+	elseif d_head < math.pi then
+	    ship:write(2, 0, 3)
+		ship:write(2, 1, power)
+	end
 end
-
 
 function scan(ship)
     -- Scan
@@ -65,12 +83,6 @@ function init(ship)
     ship:slot(2, "reaction wheel")
     ship:slot(3, "scanner")
 
-	ship:write(1, 0, 3)
- -- enable propulsion, forward
-	ship:write(1, 1, 0) -- propulsion power
-
-	turn(ship, 1)
-
 	ship:write(3, 0, 1) -- enable scanner
 	ship:write(3, 1, 127) -- aperture angle (x/255*360)
 	ship:write(3, 2, 255) -- max. detection distance
@@ -83,7 +95,10 @@ function run(ship)
 	global_t = global_t + 1
     scan(ship)
 
+	accelerate(ship, 255, 1000)
+	turn(ship, 2, 5)
+
     if global_t > 300 then
-		turn_stop(ship)
+		accelerate(ship, 255, 0)
 	end	
 end
