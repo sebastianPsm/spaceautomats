@@ -2,9 +2,11 @@ use std::collections::HashMap;
 
 use mlua::{UserData, UserDataMethods};
 
+use crate::physmodel::spaceobject::Spaceobject;
 use super::dev_reaction_wheel::ReactionWheel;
 use super::dev_scanner::Scanner;
 use super::dev_propulsion::Propulsion;
+use super::dev_plasmacannon::Plasmacannon;
 use super::device::Device;
 
 enum DeviceEnum {
@@ -14,16 +16,13 @@ enum DeviceEnum {
 }
 
 pub struct Ship {
+    pub object: Spaceobject,
     pub propulsion: Propulsion,
     pub reaction_wheel: ReactionWheel,
     pub scanner: Scanner,
+    pub plasmacannon: Plasmacannon,
     
     device_map: HashMap<u8, DeviceEnum>,
-
-    pos: (u32, u32), // (x,y)
-    speed: (f64, f64),
-    dir: u16, // direction in deg*10 (0..3599)
-    angular_velocity: f64,
     name: String,
     health: u16,
     log: String,
@@ -35,62 +34,15 @@ impl Ship {
             propulsion: Propulsion::new(),
             reaction_wheel: ReactionWheel::new(),
             scanner: Scanner::new(),
+            plasmacannon: Plasmacannon::new(),
             device_map: HashMap::new(),
-
-            pos: (0, 0),
-            speed: (0.0, 0.0),
-            dir: 0,
-            angular_velocity: 0.0,
+            object: Spaceobject::new(),
             name: "MyShip".to_string(),
             health: u16::MAX,
             log: "".to_string(),
         }
     }
-    /// Get position
-    pub fn get_pos(&self) -> (u32, u32) {
-        self.pos
-    }
-    /// Set position
-    pub fn set_pos(&mut self, pos: (u32, u32)) {
-        self.pos = pos;
-    }
-    /// Get speed
-    pub fn get_speed(&self) -> (f64, f64) {
-        self.speed
-    }
-    /// Set speed
-    pub fn set_speed(&mut self, value: (f64, f64)) {
-        self.speed = value;
-    }
-    /// Get direction
-    pub fn get_dir(&self) -> u16 {
-        self.dir
-    }
-    /// Set direction
-    pub fn set_dir(&mut self, dir: u16) {
-        self.dir = dir%3600;
-    }
-    /// Get direction [rad]
-    pub fn get_dir_rad(&self) -> f64 {
-        (self.dir as f64) / 10.0 / 180.0 * std::f64::consts::PI
-    }
-    /// Set direction [rad]
-    pub fn set_dir_rad(&mut self, dir_rad: f64) {
-        let mut dir = dir_rad / std::f64::consts::PI * 180.0 * 10.0;
-        while dir < 0.0 {
-            dir += 3600.0
-        }
-
-        self.set_dir(dir as u16)
-    }
-    /// Get angular velocity [rad/step]
-    pub fn get_angular_velocity_rad(&self) -> f64 {
-        self.angular_velocity
-    }
-    /// Set angular velocity [rad/step]
-    pub fn set_angular_velocity_rad(&mut self, ang_vel_rad: f64) {
-        self.angular_velocity = ang_vel_rad;
-    }
+    
     /// Set name
     pub fn set_name(&mut self, name: &String) {
         self.name = name.clone();

@@ -105,3 +105,11 @@ Scalings:
     ship.write(3, 2, 255) -- Set max. detection distance
     ship.write(3, 3, 0) -- Set heading offset
     ship.write(3, 4, 255) -- Set sensitivity
+
+### Plasma cannon ('plasma cannon')
+
+A plasma cannon shoots plasma to destroy enemies.
+
+| Offset    | Name     | r/w    | Description                                         |
+|--------   |-------   |-----   |------------------------------------------------     |
+| 0         | Ctrl     | w      | Bit 0: Enabled                                      |

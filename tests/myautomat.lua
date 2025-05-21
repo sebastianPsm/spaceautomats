@@ -82,11 +82,14 @@ function init(ship)
     ship:slot(1, "propulsion")
     ship:slot(2, "reaction wheel")
     ship:slot(3, "scanner")
+	ship:slot(4, "plasma")
 
 	ship:write(3, 0, 1) -- enable scanner
 	ship:write(3, 1, 127) -- aperture angle (x/255*360)
 	ship:write(3, 2, 255) -- max. detection distance
 	ship:write(3, 3, 0) -- heading
+
+	ship:write(4, 0, 1) -- enable plasma cannon
 end
 
 

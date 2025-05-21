@@ -1,7 +1,10 @@
+pub(crate) mod spaceobject;
+
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
+use spaceobject::Spaceobject;
 
-use crate::spaceautomat::Spaceautomat;
+use crate::{plasma::Plasma, spaceautomat::Spaceautomat};
 
 pub struct Physmodel {
     step_count: u64,
@@ -35,21 +38,21 @@ impl Physmodel {
             let y = self.rng.gen_range(0..self.height);
             let dir = self.rng.gen_range(0..3599);
 
-            automat.ship_hw.set_pos((x,y));
-            automat.ship_hw.set_dir(dir);
+            automat.ship_hw.object.set_pos((x,y));
+            automat.ship_hw.object.set_dir(dir);
         });
     }
-    pub fn update(&mut self, automats: &mut Vec<Spaceautomat>) {
+    pub fn update(&mut self, automats: &mut Vec<Spaceautomat>, plasmas: &mut Vec<Plasma>) {
         let mut all_positions = Vec::new();
         for automat in automats.iter() {
-            all_positions.push(automat.ship_hw.get_pos());
+            all_positions.push(automat.ship_hw.object.get_pos());
         }
 
         for automat in automats.iter_mut() {
             let mut fuel: u32 = automat.ship_hw.propulsion.get_fuel();
 
             /*
-             * Scanner (scan before move)
+             * in Scanner (scan before move)
              */
             if automat.ship_hw.scanner.get_enabled() {
                 fuel = fuel - 1;
@@ -58,11 +61,10 @@ impl Physmodel {
             }
 
             /*
-             * Propulsion
+             * in propulsion
              */
             let propulsion_enabled = automat.ship_hw.propulsion.get_enabled();
             let mut power: f64 = 0.0;
-
             if propulsion_enabled {
                 fuel = fuel - 1;
                 let power_value = automat.ship_hw.propulsion.get_power();    
@@ -76,11 +78,10 @@ impl Physmodel {
             }
 
             /*
-             * Reaction wheel
+             * in reaction wheel
              */
             let reaction_wheel_enabled = automat.ship_hw.reaction_wheel.get_enabled();
             let mut ang_accel: f64 = 0.0;
-
             if reaction_wheel_enabled {
                 fuel = fuel - 1;
                 let power_value = automat.ship_hw.reaction_wheel.get_power();
@@ -95,45 +96,64 @@ impl Physmodel {
             }
 
             /*
-             * Kinematics
+             * in plasma cannon
              */
-            let m = ang_accel / self.i;
-            let dir: f64 = automat.ship_hw.get_dir_rad();
-            let angular_velo = automat.ship_hw.get_angular_velocity_rad();
+            if automat.ship_hw.plasmacannon.get_enabled() {
+                plasmas.push(Plasma::new(automat.get_id())); // spawn new plasma
+            }
 
-            let angular_velo_new = angular_velo + m*self.t;
-            let dir_new = angular_velo_new * self.t + dir;           
-
-            let s = (automat.ship_hw.get_pos().0 as f64, automat.ship_hw.get_pos().1  as f64);
-            let v = automat.ship_hw.get_speed();
-            let a = (power / self.m * dir_new.cos(), power / self.m * dir_new.sin());            
-
-            let mut s_new = (s.0 + v.0 * self.t + a.0 * self.t*self.t, 
-                                         s.1 + v.1 * self.t + a.1 * self.t*self.t);
+            /*
+             * process kinematics
+             */
+            let (angular_velo_new, dir_new, v_new) = self.kinematics(&mut automat.ship_hw.object, power, ang_accel);
             
             /*
-             * Boundary
-             */             
-            s_new.0 = if s_new.0 > self.width.into() { self.width.into() } else { s_new.0 };
-            s_new.0 = if s_new.0 < 0.0 { 0.0 } else { s_new.0 };
-            s_new.1 = if s_new.1 > self.height.into() { self.height.into() } else { s_new.1 };
-            s_new.1 = if s_new.1 < 0.0 { 0.0 } else { s_new.1 };
-
-            let v_new = (s_new.0 - s.0 / self.t, s_new.1 - s.1 / self.t);
-
-            automat.ship_hw.set_angular_velocity_rad(angular_velo_new);
-            automat.ship_hw.set_dir_rad(dir_new);
-            automat.ship_hw.set_speed(v_new);
-            automat.ship_hw.set_pos((s_new.0 as u32, s_new.1 as u32));
-
+             * out reaction wheel
+             */
             if reaction_wheel_enabled {
                 automat.ship_hw.reaction_wheel.set_angular_velocity(angular_velo_new);
             }
+
+            /*
+             * out propulsion
+             */
             if propulsion_enabled {
                 automat.ship_hw.propulsion.set_velocity(v_new, dir_new);
             }
             
         }
         self.step_count += 1;
+    }
+
+fn kinematics(&self, object: &mut Spaceobject, power: f64, ang_accel: f64) -> (f64, f64, (f64, f64)) {
+        let m = ang_accel / self.i;
+        let dir: f64 = object.get_dir_rad();
+        let angular_velo = object.get_angular_velocity_rad();
+    
+        let angular_velo_new = angular_velo + m*self.t;
+        let dir_new = angular_velo_new * self.t + dir;
+    
+        let s = (object.get_pos().0 as f64, object.get_pos().1  as f64);
+        let v = object.get_speed();
+        let a = (power / self.m * dir_new.cos(), power / self.m * dir_new.sin());
+    
+        let mut s_new = (s.0 + v.0 * self.t + a.0 * self.t*self.t, 
+                                     s.1 + v.1 * self.t + a.1 * self.t*self.t);
+            
+        /*
+         * Boundary
+         */
+        s_new.0 = if s_new.0 > self.width.into() { self.width.into() } else { s_new.0 };
+        s_new.0 = if s_new.0 < 0.0 { 0.0 } else { s_new.0 };
+        s_new.1 = if s_new.1 > self.height.into() { self.height.into() } else { s_new.1 };
+        s_new.1 = if s_new.1 < 0.0 { 0.0 } else { s_new.1 };
+    
+        let v_new = (s_new.0 - s.0 / self.t, s_new.1 - s.1 / self.t);
+    
+        object.set_angular_velocity_rad(angular_velo_new);
+        object.set_dir_rad(dir_new);
+        object.set_speed(v_new);
+        object.set_pos((s_new.0 as u32, s_new.1 as u32));
+        (angular_velo_new, dir_new, v_new)
     }
 }

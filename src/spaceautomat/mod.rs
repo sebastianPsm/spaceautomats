@@ -3,6 +3,7 @@ mod device;
 mod dev_propulsion;
 mod dev_reaction_wheel;
 mod dev_scanner;
+mod dev_plasmacannon;
 
 use mlua::{Function, Lua, LuaOptions, StdLib};
 use crate::spaceautomat::ship::Ship;
@@ -15,6 +16,7 @@ pub enum State {
 }
 
 pub struct Spaceautomat {
+    id: u32,
     lua: Lua,
     step_count: u64,
     pub ship_hw: Ship,
@@ -35,11 +37,18 @@ impl Spaceautomat {
         let lua = Lua::new_with(StdLib::MATH|StdLib::STRING, LuaOptions::new()).unwrap();
 
         Spaceautomat {
+            id: 0,
             lua,
             step_count: 0,
             ship_hw: Ship::new(),
             state: State::Init
         }
+    }
+    pub fn set_id(&mut self, id: u32) {
+        self.id = id
+    }
+    pub fn get_id(&self) -> u32 {
+        self.id
     }
     /// Load Lua code and checks if init() and run() are available
     pub fn load_code(&mut self, code: &str) -> ReturnCode {

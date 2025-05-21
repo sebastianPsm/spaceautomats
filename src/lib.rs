@@ -1,14 +1,17 @@
 pub mod spaceautomat;
 mod physmodel;
+mod plasma;
 
 use std::path::PathBuf;
 
 use spaceautomat::ReturnCode;
 use crate::spaceautomat::Spaceautomat;
 use crate::physmodel::Physmodel;
+use crate::plasma::Plasma;
 
 pub struct Simulation {
     automats: Vec<Spaceautomat>,
+    plasmas: Vec<Plasma>,
     physmodel: Physmodel
 }
 
@@ -16,6 +19,7 @@ impl Simulation {
     pub fn new(x: u32, y: u32, seed: u64) -> Simulation {
         Simulation {
             automats: Vec::new(),
+            plasmas: Vec::new(),
             physmodel: Physmodel::new(x, y, seed)
         }
     }
@@ -51,8 +55,12 @@ impl Simulation {
     /// Calls the init()-function from all automats and initializes the simulation
     pub fn init(&mut self) {
         // Initialize each automat --> calls init()-function from each automat
+        let mut id_cnt = 0;
         self.automats.iter_mut().for_each(|ele| { 
-            ele.init(); 
+            ele.init();
+
+            ele.set_id(id_cnt);
+            id_cnt += 1;
         });
 
         // Initialize the physmodel with the automats
@@ -79,7 +87,7 @@ impl Simulation {
         });
         
         // Steps the physmodel with the automats
-        self.physmodel.update(&mut self.automats);
+        self.physmodel.update(&mut self.automats, &mut self.plasmas);
     }
     /// Provides a vector of simulation step counters for each automat
     pub fn count_steps(&self) -> Vec<u64> {
