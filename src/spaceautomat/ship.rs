@@ -13,6 +13,7 @@ enum DeviceEnum {
     Propulsion,
     ReactionWheel,
     Scanner,
+    Plasmaconnon,
 }
 
 pub struct Ship {
@@ -30,13 +31,15 @@ pub struct Ship {
 
 impl Ship {
     pub fn new() -> Ship {
+        let mut object = Spaceobject::new();
+        object.set_size(50000);
         Ship {
             propulsion: Propulsion::new(),
             reaction_wheel: ReactionWheel::new(),
             scanner: Scanner::new(),
             plasmacannon: Plasmacannon::new(),
             device_map: HashMap::new(),
-            object: Spaceobject::new(),
+            object: object,
             name: "MyShip".to_string(),
             health: u16::MAX,
             log: "".to_string(),
@@ -54,6 +57,9 @@ impl Ship {
     /// Get health
     pub fn get_health(&self) -> u16 {
         self.health
+    }
+    pub fn apply_damage(&mut self, value: u16) {
+        self.health -= value
     }
     pub fn add_log_msg(&mut self, msg: &String) {
         self.log.push_str(msg);
@@ -85,6 +91,10 @@ impl UserData for Ship {
                 ship.scanner.set_active(slot_id);
                 ship.device_map.insert(slot_id, DeviceEnum::Scanner);
             }
+            if Plasmacannon::get_name().eq(&devicestr) {
+                ship.plasmacannon.set_active(slot_id);
+                ship.device_map.insert(slot_id, DeviceEnum::Plasmaconnon);
+            }
             Ok(())
         });
         methods.add_method_mut("write", |_, ship, (slot_id, addr, value):(u8, u8, u8)| {
@@ -94,6 +104,7 @@ impl UserData for Ship {
                     DeviceEnum::Propulsion => {ship.propulsion.write(addr, value)},
                     DeviceEnum::ReactionWheel => {ship.reaction_wheel.write(addr, value)},
                     DeviceEnum::Scanner => {ship.scanner.write(addr, value)},
+                    DeviceEnum::Plasmaconnon => {ship.plasmacannon.write(addr, value)},
                 }
             }
             Ok(())
@@ -105,6 +116,7 @@ impl UserData for Ship {
                     DeviceEnum::Propulsion => { return Ok(ship.propulsion.read(addr)); },
                     DeviceEnum::ReactionWheel => { return Ok(ship.reaction_wheel.read(addr)); },
                     DeviceEnum::Scanner => { return Ok(ship.scanner.read(addr)); },
+                    DeviceEnum::Plasmaconnon => { return Ok(ship.plasmacannon.read(addr)); }
                 }
             }
             Ok(0)

@@ -8,8 +8,9 @@ pub struct Propulsion {
     forward: bool,
     fuel: u32,
     power: u8,
-    velocity: [u8; 2],
-    direction: [u8; 4]
+    velocity_abs: [u8; 2],
+    velocity_dir: [u8; 4],
+    heading: [u8; 4]
 }
 
 impl Propulsion {
@@ -20,8 +21,9 @@ impl Propulsion {
             forward: true,
             fuel: 0,
             power: 0,
-            velocity: [0, 0],
-            direction: [0, 0, 0, 0]
+            velocity_abs: [0, 0],
+            velocity_dir: [0, 0, 0, 0],
+            heading: [0, 0, 0, 0]
         }
     }
 }
@@ -58,12 +60,19 @@ impl Device for Propulsion {
             3 => { return (self.fuel & 0x0000FF00 >>  8) as u8 }
             4 => { return (self.fuel & 0x00FF0000 >> 16) as u8 }
             5 => { return (self.fuel & 0xFF000000 >> 24) as u8 }
-            6 => { return self.velocity[0] }
-            7 => { return self.velocity[1] }
-            8 => { return self.direction[0] }
-            9 => { return self.direction[1] }
-            10 => { return self.direction[2] }
-            11 => { return self.direction[3] }
+
+            6 => { return self.velocity_abs[0] }
+            7 => { return self.velocity_abs[1] }
+
+            8 => { return self.velocity_dir[0] }
+            9 => { return self.velocity_dir[1] }
+            10 => { return self.velocity_dir[2] }
+            11 => { return self.velocity_dir[3] }
+
+            12 => { return self.heading[0] }
+            13 => { return self.heading[1] }
+            14 => { return self.heading[2] }
+            15 => { return self.heading[3] }
             _ => return 0
         }
     }
@@ -85,9 +94,9 @@ impl Propulsion {
         self.forward
     }
     pub fn set_velocity(&mut self, velocity: (f64, f64), direction: f64) {
+        self.velocity_dir = (velocity.0.atan2(velocity.1).mul(1000000.0).clamp(0.0, f64::consts::PI*2.0*1000000.0) as u32).to_le_bytes(); // in µrad
         let velocity = (velocity.0.powi(2) + velocity.1.powi(2)).sqrt();
-        self.velocity = (velocity.clamp(i16::MIN as f64, i16::MAX as f64) as i16).to_le_bytes();        
-        self.direction = (direction.mul(1000000.0).clamp(0.0, f64::consts::PI*2.0*1000000.0) as u32).to_le_bytes(); // in µrad
-
+        self.velocity_abs = (velocity.clamp(i16::MIN as f64, i16::MAX as f64) as i16).to_le_bytes();        
+        self.heading = (direction.mul(1000000.0).clamp(0.0, f64::consts::PI*2.0*1000000.0) as u32).to_le_bytes(); // in µrad
     }
 }

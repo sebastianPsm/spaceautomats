@@ -2,14 +2,16 @@ use super::device::Device;
 
 pub struct Plasmacannon {
     slot_id: u8,
-    enabled: bool
+    enabled: bool,
+    last_shot: u64
 }
 
 impl Plasmacannon {
     pub fn new() -> Plasmacannon {
         Plasmacannon {
             slot_id: 0,
-            enabled: false
+            enabled: false,
+            last_shot: 0
         }
     }
 }
@@ -46,5 +48,11 @@ impl Device for Plasmacannon {
 impl Plasmacannon {
     pub fn get_enabled(&self) -> bool {
         self.enabled
+    }
+    pub fn set_last_shot(&mut self, step: u64) {
+        self.last_shot = step
+    }
+    pub fn get_last_shot(&self) -> u64 {
+        self.last_shot
     }
 }

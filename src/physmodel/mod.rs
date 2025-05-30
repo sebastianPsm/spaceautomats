@@ -43,6 +43,9 @@ impl Physmodel {
         });
     }
     pub fn update(&mut self, automats: &mut Vec<Spaceautomat>, plasmas: &mut Vec<Plasma>) {
+        /*
+         * Automats
+         */
         let mut all_positions = Vec::new();
         for automat in automats.iter() {
             all_positions.push(automat.ship_hw.object.get_pos());
@@ -98,8 +101,17 @@ impl Physmodel {
             /*
              * in plasma cannon
              */
-            if automat.ship_hw.plasmacannon.get_enabled() {
-                plasmas.push(Plasma::new(automat.get_id())); // spawn new plasma
+            if automat.ship_hw.plasmacannon.get_enabled() && (automat.ship_hw.plasmacannon.get_last_shot() + 3) < self.step_count  {
+                automat.ship_hw.plasmacannon.set_last_shot(self.step_count);
+                let mut p = Plasma::new(automat.get_id());
+                let d = automat.ship_hw.object.get_dir_rad() + self.rng.gen_range(-0.2 .. 0.2);
+                let mut s = automat.ship_hw.object.get_speed();
+                s.0 += 10000.0 * d.cos();
+                s.1 += 10000.0 * d.sin();
+                p.object.set_pos(automat.ship_hw.object.get_pos());
+                p.object.set_speed(s);
+                p.object.set_dir_rad(d);
+                plasmas.push(p); // spawn new plasma
             }
 
             /*
@@ -122,6 +134,39 @@ impl Physmodel {
             }
             
         }
+
+        /*
+         * Plasma
+         */
+        let mut plasmas_new: Vec<Plasma> = vec![];
+        for plasma in plasmas.into_iter() {
+            if plasma.is_on_boundary(self.width, self.height) {
+                continue;
+            }
+
+            let mut collision = false;
+            for automat in automats.iter_mut() {
+                if automat.get_id() == plasma.get_source_id() {
+                    continue;
+                }
+
+                if automat.ship_hw.object.check_collision(&plasma.object) {
+                    collision = true;
+                    automat.ship_hw.apply_damage(100);
+                    break;
+                }
+            }
+            if collision {
+                continue;
+            }
+
+            let (_, dir_new, v_new) = self.kinematics(&mut plasma.object, 0.0, 0.0);
+            plasma.object.set_dir_rad(dir_new);
+            plasma.object.set_speed(v_new);
+            plasmas_new.push(plasma.clone());
+        }
+        *plasmas = plasmas_new;
+
         self.step_count += 1;
     }
 
@@ -129,27 +174,28 @@ fn kinematics(&self, object: &mut Spaceobject, power: f64, ang_accel: f64) -> (f
         let m = ang_accel / self.i;
         let dir: f64 = object.get_dir_rad();
         let angular_velo = object.get_angular_velocity_rad();
-    
+
         let angular_velo_new = angular_velo + m*self.t;
         let dir_new = angular_velo_new * self.t + dir;
-    
+
         let s = (object.get_pos().0 as f64, object.get_pos().1  as f64);
         let v = object.get_speed();
         let a = (power / self.m * dir_new.cos(), power / self.m * dir_new.sin());
-    
+
         let mut s_new = (s.0 + v.0 * self.t + a.0 * self.t*self.t, 
                                      s.1 + v.1 * self.t + a.1 * self.t*self.t);
-            
+
         /*
          * Boundary
          */
-        s_new.0 = if s_new.0 > self.width.into() { self.width.into() } else { s_new.0 };
-        s_new.0 = if s_new.0 < 0.0 { 0.0 } else { s_new.0 };
-        s_new.1 = if s_new.1 > self.height.into() { self.height.into() } else { s_new.1 };
-        s_new.1 = if s_new.1 < 0.0 { 0.0 } else { s_new.1 };
-    
+        let r = object.get_size() as f64;
+        s_new.0 = if s_new.0 > self.width as f64 - r { self.width as f64 - r } else { s_new.0 };
+        s_new.0 = if s_new.0 < r { r } else { s_new.0 };
+        s_new.1 = if s_new.1 > self.height as f64 - r { self.height as f64 - r } else { s_new.1 };
+        s_new.1 = if s_new.1 < r { r } else { s_new.1 };
+
         let v_new = (s_new.0 - s.0 / self.t, s_new.1 - s.1 / self.t);
-    
+
         object.set_angular_velocity_rad(angular_velo_new);
         object.set_dir_rad(dir_new);
         object.set_speed(v_new);

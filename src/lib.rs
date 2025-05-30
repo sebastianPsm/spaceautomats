@@ -48,6 +48,14 @@ impl Simulation {
         }
         ret
     }
+    /// Get plasmas
+    pub fn get_plasmas(&self) -> Vec<&Plasma> {
+        let mut ret: Vec<&Plasma> = vec![];
+        for p in &self.plasmas {
+            ret.push(&p);
+        }
+        ret
+    }
     /// Get physmodel
     pub fn get_physmodel(&self) -> &Physmodel {
         &self.physmodel

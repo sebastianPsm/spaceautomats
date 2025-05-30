@@ -27,10 +27,14 @@ A propulsion device comes with a fuel tank and drives your ship.
 | 5         | Fuel     | r      | Fuel level (Bit 24..31)                             |
 | 6         | Velocity | r      | Velocity (Bit 0..7, least significant octet)        |
 | 7         | Velocity | r      | Velocity (Bit 8..15)  -signed-                      |
-| 8         | Heading  | r      | Heading in µrad (Bit 0..7, least significant octet) |
-| 9         | Heading  | r      | Heading in µrad (Bit 8..15)  -unsigned-             |
-| 10        | Heading  | r      | Heading in µrad (Bit 16..23)                        |
-| 11        | Heading  | r      | Heading in µrad (Bit 24..31)                        |
+| 8         | Velocity (direction) | r      | Direction of the velocity in µrad (Bit 0..7, least significant octet) |
+| 9         | Velocity (direction) | r      | Direction of the velocity in µrad (Bit 8..15)  -unsigned-             |
+| 10        | Velocity (direction) | r      | Direction of the velocity in µrad (Bit 16..23)                        |
+| 11        | Velocity (direction) | r      | Direction of the velocity in µrad (Bit 24..31)                        |
+| 12        | Heading  | r      | Heading in µrad (Bit 0..7, least significant octet) |
+| 13        | Heading  | r      | Heading in µrad (Bit 8..15)  -unsigned-             |
+| 14        | Heading  | r      | Heading in µrad (Bit 16..23)                        |
+| 15        | Heading  | r      | Heading in µrad (Bit 24..31)                        |
 
 #### Example
 
