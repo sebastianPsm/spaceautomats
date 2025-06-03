@@ -71,7 +71,7 @@ impl ReactionWheel {
         self.counterclock
     }
     pub fn set_angular_velocity(&mut self, angular_velo: f64) {
-        if angular_velo < 0.0 {
+        if angular_velo > 0.0 {
             self.angular_velo_counterclock = true;
         }
         self.angular_velo = ((angular_velo as f32).abs().mul(1000000.0).clamp(0.0, 1000000.0) as u32).to_le_bytes(); // in µrad/step

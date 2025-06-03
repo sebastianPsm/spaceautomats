@@ -13,7 +13,7 @@ pub struct Physmodel {
     rng: ChaCha8Rng,
     t: f64,
     m: f64,
-    i: f64,
+    i: f64, // Inertialmoment
 }
 
 impl Physmodel {
@@ -170,17 +170,18 @@ impl Physmodel {
         self.step_count += 1;
     }
 
-fn kinematics(&self, object: &mut Spaceobject, power: f64, ang_accel: f64) -> (f64, f64, (f64, f64)) {
-        let m = ang_accel / self.i;
-        let dir: f64 = object.get_dir_rad();
-        let angular_velo = object.get_angular_velocity_rad();
+fn kinematics(&self, object: &mut Spaceobject, power: f64, torque: f64) -> (f64, f64, (f64, f64)) {
+        let alpha: f64 = torque / self.i;
+        let direction_old: f64 = object.get_dir_rad();
+        let angular_velocity_old = object.get_angular_velocity_rad();
 
-        let angular_velo_new = angular_velo + m*self.t;
-        let dir_new = angular_velo_new * self.t + dir;
+        let angular_velocity_new = angular_velocity_old + alpha*self.t;
+println!("angular_velocity_old: {}, angular_velocity_new: {}, alpha: {}", angular_velocity_old, angular_velocity_new, alpha);
+        let direction_new = angular_velocity_new * self.t + direction_old;
 
         let s = (object.get_pos().0 as f64, object.get_pos().1  as f64);
         let v = object.get_speed();
-        let a = (power / self.m * dir_new.cos(), power / self.m * dir_new.sin());
+        let a = (power / self.m * direction_new.cos(), power / self.m * direction_new.sin());
 
         let mut s_new = (s.0 + v.0 * self.t + a.0 * self.t*self.t, 
                                      s.1 + v.1 * self.t + a.1 * self.t*self.t);
@@ -194,12 +195,13 @@ fn kinematics(&self, object: &mut Spaceobject, power: f64, ang_accel: f64) -> (f
         s_new.1 = if s_new.1 > self.height as f64 - r { self.height as f64 - r } else { s_new.1 };
         s_new.1 = if s_new.1 < r { r } else { s_new.1 };
 
-        let v_new = (s_new.0 - s.0 / self.t, s_new.1 - s.1 / self.t);
+        let velocity_new = (s_new.0 - s.0 / self.t, s_new.1 - s.1 / self.t);
 
-        object.set_angular_velocity_rad(angular_velo_new);
-        object.set_dir_rad(dir_new);
-        object.set_speed(v_new);
+        object.set_angular_velocity_rad(angular_velocity_new);
+        object.set_dir_rad(direction_new);
+        object.set_speed(velocity_new);
         object.set_pos((s_new.0 as u32, s_new.1 as u32));
-        (angular_velo_new, dir_new, v_new)
+
+        (angular_velocity_new, direction_new, velocity_new)
     }
 }

@@ -19,6 +19,13 @@ function read_u32(ship, slot, start_address)
     val_4 = ship:read(slot, start_address+3) << 24 -- high byte
     return val_1 + val_2 + val_3 + val_4
 end
+function normRad(val)
+    res = math.fmod(val + math.pi, 2*math.pi)
+    if res < 0 then
+        res = res + 2 * math.pi
+    end
+    return res - math.pi
+end
 function stop(ship) -- stop any movement
     velocity_abs = read_u16(PROPULSION, 6) -- current velocity
 	velocity_dir = read_u32(PROPULSION, 8) / 1E6 -- current velocity direction
@@ -39,20 +46,27 @@ function accelerate(ship, power, thresh)
     end    
 end
 
-function turn(ship, power, heading)
-    curr_heading = read_u32(ship, PROPULSION, 12) / 1E6 -- current heading
-    d_head = ((curr_heading - heading) + 2*math.pi)%math.pi -- heading delta
+function turn(ship, setpoint)
+    processval = read_u32(ship, PROPULSION, 12) / 1E6 -- current heading
+    err = normRad(setpoint - processval) -- heading delta
+	dir = ship:read(REACTION_WHEEL, 2) == 0 and 1 or -1
+	curr_angular_velocity = dir*read_u32(ship, REACTION_WHEEL, 3) / 1E6 -- angular velocity
+
+	power = 4.3116 * err + 11.4706 * curr_angular_velocity
+    ship:log(string.format("err: %.2f, curr_angular_velocity: %.2f, power: %.0f\n", err, curr_angular_velocity, power))
+
+    
 
     ship:write(REACTION_WHEEL, 0, 0) -- disable reaction wheel
     ship:write(REACTION_WHEEL, 1, 0) -- turn power: 0
-    if d_head > math.pi/2 then
-ship:log(string.format("d_head: %.2f clock\n", d_head))
+    if power > 0 then
+--ship:log(string.format("d_head: %.2f clock\n", d_head))
         ship:write(REACTION_WHEEL, 0, 1)
-    	ship:write(REACTION_WHEEL, 1, power)
-    elseif d_head < math.pi/2 then
-ship:log(string.format("d_head: %.2f counter-clock\n", d_head))
+    	ship:write(REACTION_WHEEL, 1, math.abs(power))
+    else
+--ship:log(string.format("d_head: %.2f counter-clock\n", d_head))
         ship:write(REACTION_WHEEL, 0, 3)
-        ship:write(REACTION_WHEEL, 1, power)
+        ship:write(REACTION_WHEEL, 1, math.abs(power))
     end
 end
 
@@ -116,7 +130,7 @@ end
 function run(ship)
 	global_t = global_t + 1
 
-	turn(ship, 2, 5)
+	turn(ship, 0)
     
 
 
