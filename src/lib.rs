@@ -88,14 +88,14 @@ impl Simulation {
     }
     /// Calls the run()-function from all automats to perform one simulation step
     pub fn step(&mut self) {
+        // Steps the physmodel with the automats
+        self.physmodel.update(&mut self.automats, &mut self.plasmas);
+
         // Call step for each automat --> calls run()-function from each automat
         self.automats.iter_mut().for_each(|ele| {
             if !ele.is_initialized() { return; }
             ele.step();
         });
-        
-        // Steps the physmodel with the automats
-        self.physmodel.update(&mut self.automats, &mut self.plasmas);
     }
     /// Provides a vector of simulation step counters for each automat
     pub fn count_steps(&self) -> Vec<u64> {

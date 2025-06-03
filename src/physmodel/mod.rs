@@ -34,8 +34,8 @@ impl Physmodel {
     }
     pub fn init(&mut self, automats: &mut Vec<Spaceautomat>) {
         automats.iter_mut().for_each(|automat| {
-            let x = self.rng.gen_range(0..self.width);
-            let y = self.rng.gen_range(0..self.height);
+            let x = self.rng.gen_range(0..self.width/4)+self.width/2;
+            let y = self.rng.gen_range(0..self.height/4)+self.height/2;
             let dir = self.rng.gen_range(0..3599);
 
             automat.ship_hw.object.set_pos((x,y));
