@@ -34,8 +34,8 @@ impl Physmodel {
     }
     pub fn init(&mut self, automats: &mut Vec<Spaceautomat>) {
         automats.iter_mut().for_each(|automat| {
-            let x = self.rng.gen_range(0..self.width);
-            let y = self.rng.gen_range(0..self.height);
+            let x = self.rng.gen_range(0..self.width/4)+self.width/2;
+            let y = self.rng.gen_range(0..self.height/4)+self.height/2;
             let dir = self.rng.gen_range(0..3599);
 
             automat.ship_hw.object.set_pos((x,y));
@@ -176,7 +176,6 @@ fn kinematics(&self, object: &mut Spaceobject, power: f64, torque: f64) -> (f64,
         let angular_velocity_old = object.get_angular_velocity_rad();
 
         let angular_velocity_new = angular_velocity_old + alpha*self.t;
-println!("angular_velocity_old: {}, angular_velocity_new: {}, alpha: {}", angular_velocity_old, angular_velocity_new, alpha);
         let direction_new = angular_velocity_new * self.t + direction_old;
 
         let s = (object.get_pos().0 as f64, object.get_pos().1  as f64);
