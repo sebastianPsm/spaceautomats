@@ -36,10 +36,10 @@ impl Physmodel {
         automats.iter_mut().for_each(|automat| {
             let x = self.rng.gen_range(0..self.width/4)+self.width/2;
             let y = self.rng.gen_range(0..self.height/4)+self.height/2;
-            let dir = self.rng.gen_range(0..3599);
+            let dir: f64 = self.rng.gen_range(-std::f64::consts::PI..std::f64::consts::PI);
 
             automat.ship_hw.object.set_pos((x,y));
-            automat.ship_hw.object.set_dir(dir);
+            automat.ship_hw.object.set_dir_rad(dir);
         });
     }
     pub fn update(&mut self, automats: &mut Vec<Spaceautomat>, plasmas: &mut Vec<Plasma>) {
@@ -84,18 +84,15 @@ impl Physmodel {
              * in reaction wheel
              */
             let reaction_wheel_enabled = automat.ship_hw.reaction_wheel.get_enabled();
-            let mut ang_accel: f64 = 0.0;
+            let mut torque: f64 = 0.0;
             if reaction_wheel_enabled {
                 fuel = fuel - 1;
                 let power_value = automat.ship_hw.reaction_wheel.get_power();
-                if power_value > 0 && fuel >= u32::from(power_value) {
-                    fuel = fuel-u32::from(power_value);
+                if power_value > 0 && fuel >= power_value.abs() as u32 {
+                    fuel = fuel - power_value.abs() as u32;
                     automat.ship_hw.propulsion.set_fuel(fuel);
-
-                    let counterclock = automat.ship_hw.reaction_wheel.get_counterclock();
-                    ang_accel = f64::from(power_value) * if counterclock {1.0} else {-1.0} / 10000.0;
+                    torque = f64::from(power_value) / 1000.0;
                 }
-                
             }
 
             /*
@@ -117,7 +114,7 @@ impl Physmodel {
             /*
              * process kinematics
              */
-            let (angular_velo_new, dir_new, v_new) = self.kinematics(&mut automat.ship_hw.object, power, ang_accel);
+            let (angular_velo_new, dir_new, v_new) = self.kinematics(&mut automat.ship_hw.object, power, torque);
             
             /*
              * out reaction wheel
@@ -177,7 +174,7 @@ fn kinematics(&self, object: &mut Spaceobject, power: f64, torque: f64) -> (f64,
 
         let angular_velocity_new = angular_velocity_old + alpha*self.t;
         let direction_new = angular_velocity_new * self.t + direction_old;
-
+println!("{} direction (old/new): ({:.4}/{:.4}), angular_velocity: ({:.4}/{:.4}, alpha: ({:.4}))", self.step_count, direction_old, direction_new, angular_velocity_old, angular_velocity_new, alpha);
         let s = (object.get_pos().0 as f64, object.get_pos().1  as f64);
         let v = object.get_speed();
         let a = (power / self.m * direction_new.cos(), power / self.m * direction_new.sin());

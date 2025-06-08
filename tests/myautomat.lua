@@ -19,6 +19,11 @@ function read_u32(ship, slot, start_address)
     val_4 = ship:read(slot, start_address+3) << 24 -- high byte
     return val_1 + val_2 + val_3 + val_4
 end
+function write_u16(ship, slot, start_address, value)
+    value_ = math.floor(value + 0.5)
+    ship:write(slot, start_address+0, value_ & 0xFF)
+    ship:write(slot, start_address+1, (value_ >> 8) & 0xFF)
+end
 function normRad(val)
     res = math.fmod(val + math.pi, 2*math.pi)
     if res < 0 then
@@ -26,10 +31,16 @@ function normRad(val)
     end
     return res - math.pi
 end
-function stop(ship) -- stop any movement
-    velocity_abs = read_u16(PROPULSION, 6) -- current velocity
-	velocity_dir = read_u32(PROPULSION, 8) / 1E6 -- current velocity direction
-    heading = read_u32(PROPULSION, 12) / 1E6 -- current heading
+function turn(ship, setpoint)
+    processval = read_u32(ship, PROPULSION, 12) / 1E6 -- current heading
+    err = (setpoint - processval) -- heading delta
+	dir = ship:read(REACTION_WHEEL, 2) == 0 and -1 or 1 -- counter clock is positive
+	curr_angular_velocity = dir*read_u32(ship, REACTION_WHEEL, 3) / 1E6  -- angular velocity
+
+	power = 5 * err + -500 * curr_angular_velocity
+    ship:log(string.format("t: %d, err: %.2f, curr_angular_velocity: %.2f, power: %.0f, processval: %.2f, dir: %d\n", global_t, err, curr_angular_velocity, power, processval, power > 0 and 3 or 1))
+ship:log(string.format("t: %d, : %.4f\n", global_t, power))
+	write_u16(ship, REACTION_WHEEL, 1, power)
 end
 
 function accelerate(ship, power, thresh)
@@ -44,30 +55,6 @@ function accelerate(ship, power, thresh)
         ship:write(PROPULSION, 0, 1) -- enable propulsion, backward
         ship:write(PROPULSION, 1, power) -- propulsion power
     end    
-end
-
-function turn(ship, setpoint)
-    processval = read_u32(ship, PROPULSION, 12) / 1E6 -- current heading
-    err = normRad(setpoint - processval) -- heading delta
-	dir = ship:read(REACTION_WHEEL, 2) == 0 and 1 or -1
-	curr_angular_velocity = dir*read_u32(ship, REACTION_WHEEL, 3) / 1E6 -- angular velocity
-
-	power = 4.3116 * err + 11.4706 * curr_angular_velocity
-    ship:log(string.format("err: %.2f, curr_angular_velocity: %.2f, power: %.0f\n", err, curr_angular_velocity, power))
-
-    
-
-    ship:write(REACTION_WHEEL, 0, 0) -- disable reaction wheel
-    ship:write(REACTION_WHEEL, 1, 0) -- turn power: 0
-    if power > 0 then
---ship:log(string.format("d_head: %.2f clock\n", d_head))
-        ship:write(REACTION_WHEEL, 0, 1)
-    	ship:write(REACTION_WHEEL, 1, math.abs(power))
-    else
---ship:log(string.format("d_head: %.2f counter-clock\n", d_head))
-        ship:write(REACTION_WHEEL, 0, 3)
-        ship:write(REACTION_WHEEL, 1, math.abs(power))
-    end
 end
 
 function scan(ship)
@@ -117,6 +104,7 @@ function init(ship)
 	ship:slot(PLASMA_CANNON, "plasma cannon")
 
 	ship:write(PROPULSION, 0, 1) -- enable propulsion
+    ship:write(REACTION_WHEEL, 0, 1) -- enable reaction wheel
 
 	ship:write(SCANNER, 0, 0) -- enable scanner
 	ship:write(SCANNER, 1, 127) -- aperture angle (x/255*360)
@@ -127,10 +115,16 @@ end
 
 
 -- The run()-function is called in every simulation step
+a = 3
 function run(ship)
 	global_t = global_t + 1
+	
 
-	turn(ship, 0)
+	if global_t % 200 == 0 then
+		a = 0
+	end
+
+	turn(ship, a)
     
 
 
@@ -139,7 +133,7 @@ function run(ship)
 	--accelerate(ship, 255, 100)
 	
 
-    if global_t > 200 then
+    if global_t > 100 then
 		--accelerate(ship, 255, 0)
 		--turn(ship, 0, 0)      
 	end	

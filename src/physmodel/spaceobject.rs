@@ -3,7 +3,7 @@ pub struct Spaceobject {
     size: u32, // radius
     pos: (u32, u32), // (x,y)
     speed: (f64, f64),
-    dir: u16, // direction in deg*10 (0..3599)
+    dir_rad : f64,
     angular_velocity: f64,
 }
 impl Spaceobject {
@@ -12,7 +12,7 @@ impl Spaceobject {
             size: 0,
             pos: (0, 0),
             speed: (0.0, 0.0),
-            dir: 0,
+            dir_rad: 0.0,
             angular_velocity: 0.0
         }
     }
@@ -41,25 +41,16 @@ impl Spaceobject {
         self.speed = value;
     }
     /// Get direction
-    pub fn get_dir(&self) -> u16 {
-        self.dir
-    }
-    /// Set direction
-    pub fn set_dir(&mut self, dir: u16) {
-        self.dir = dir%3600;
+    pub fn get_dir(&self) -> f64 {
+        self.dir_rad * std::f64::consts::PI * 180.0
     }
     /// Get direction [rad]
     pub fn get_dir_rad(&self) -> f64 {
-        (self.dir as f64) / 10.0 / 180.0 * std::f64::consts::PI
+        self.dir_rad
     }
     /// Set direction [rad]
     pub fn set_dir_rad(&mut self, dir_rad: f64) {
-        let mut dir = dir_rad / std::f64::consts::PI * 180.0 * 10.0;
-        while dir < 0.0 {
-            dir += 3600.0
-        }
-
-        self.set_dir(dir as u16)
+        self.dir_rad = dir_rad
     }
     /// Get angular velocity [rad/step]
     pub fn get_angular_velocity_rad(&self) -> f64 {

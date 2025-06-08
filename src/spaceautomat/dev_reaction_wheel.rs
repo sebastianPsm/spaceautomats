@@ -5,8 +5,7 @@ use super::device::Device;
 pub struct ReactionWheel {
     slot_id: u8,
     enabled: bool,
-    counterclock: bool,
-    power: u8,
+    power: i16,
     angular_velo: [u8; 4],
     angular_velo_counterclock: bool,
 }
@@ -16,7 +15,6 @@ impl ReactionWheel {
         ReactionWheel {
             slot_id: 0,
             enabled: false,
-            counterclock: false,
             power: 0,
             angular_velo: [0, 0, 0, 0],
             angular_velo_counterclock: false
@@ -37,11 +35,9 @@ impl Device for ReactionWheel {
         }
 
         match addr {
-            0 => { 
-                self.enabled = (value & 0x01) == 1;
-                self.counterclock = (value & 0x02) == 2;
-             }
-            1 => { self.power = value }
+            0 => { self.enabled = (value & 0x01) == 1; }
+            1 => { self.power = ((self.power as u16 & 0xFF00) | (value as u16 & 0x00FF)) as i16; }
+            2 => { self.power = ((self.power as u16 & 0x00FF) | ((value as u16) << 8) & 0xFF00) as i16; }
             _ => return
         }
     }
@@ -64,11 +60,8 @@ impl ReactionWheel {
     pub fn get_enabled(&self) -> bool {
         self.enabled
     }
-    pub fn get_power(&self) -> u8 {
+    pub fn get_power(&self) -> i16 {
         self.power
-    }
-    pub fn get_counterclock(&self) -> bool {
-        self.counterclock
     }
     pub fn set_angular_velocity(&mut self, angular_velo: f64) {
         if angular_velo > 0.0 {
