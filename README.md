@@ -66,7 +66,11 @@ A reaction wheel device rotates the ship.
 | 5         | Ang velo | r      | Angular velocity in µrad/step (Bit 16..23)                        |
 | 6         | Ang velo | r      | Angular velocity in µrad/step (Bit 24..31)                        |
 
+
+![Reaction wheel system](/img/reaction_wheel_system.png)
+
 State space for the reaction wheel system
+
 A: [0 -1; 0 0]
 B: [0; 1]
 C: [1 1]
