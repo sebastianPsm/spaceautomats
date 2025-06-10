@@ -123,6 +123,7 @@ impl UserData for Ship {
         });
         methods.add_method_mut("log", |_, ship, msg: String|{
             ship.add_log_msg(&msg);
+            //print!("{}", msg);
             Ok(0)
         });
     }

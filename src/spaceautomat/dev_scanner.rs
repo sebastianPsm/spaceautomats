@@ -122,7 +122,7 @@ impl Scanner {
     }
     pub fn check(&self, ego: &Spaceautomat, all_positions: &Vec<(u32, u32)>) -> Vec<Detection> {
         let ego_pos = ego.ship_hw.object.get_pos();
-        let ego_dir = ego.ship_hw.object.get_dir_rad();
+        let ego_dir = ego.ship_hw.object.get_dir();
         let aperture_angle = ego.ship_hw.scanner.get_aperture_angle();
         let aperture_heading = 2.0*f64::consts::PI + ego.ship_hw.scanner.get_heading();
         let aperture_angle_1 = aperture_heading - aperture_angle/2.0;

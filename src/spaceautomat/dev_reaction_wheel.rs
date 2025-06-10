@@ -5,7 +5,8 @@ use super::device::Device;
 pub struct ReactionWheel {
     slot_id: u8,
     enabled: bool,
-    power: i16,
+    torque_dir: bool, // true: counter-clock
+    torque: u16,
     angular_velo: [u8; 4],
     angular_velo_counterclock: bool,
 }
@@ -15,7 +16,8 @@ impl ReactionWheel {
         ReactionWheel {
             slot_id: 0,
             enabled: false,
-            power: 0,
+            torque_dir: true,
+            torque: 0,
             angular_velo: [0, 0, 0, 0],
             angular_velo_counterclock: false
         }
@@ -35,9 +37,12 @@ impl Device for ReactionWheel {
         }
 
         match addr {
-            0 => { self.enabled = (value & 0x01) == 1; }
-            1 => { self.power = ((self.power as u16 & 0xFF00) | (value as u16 & 0x00FF)) as i16; }
-            2 => { self.power = ((self.power as u16 & 0x00FF) | ((value as u16) << 8) & 0xFF00) as i16; }
+            0 => { 
+                self.enabled = (value & 0x01) == 1;
+                self.torque_dir = if (value & 0x02) == 2 {true} else {false};
+            }
+            1 => { self.torque = (self.torque as u16 & 0xFF00) | (value as u16 & 0x00FF); }
+            2 => { self.torque = (self.torque as u16 & 0x00FF) | ((value as u16) << 8) & 0xFF00; }
             _ => return
         }
     }
@@ -60,13 +65,11 @@ impl ReactionWheel {
     pub fn get_enabled(&self) -> bool {
         self.enabled
     }
-    pub fn get_power(&self) -> i16 {
-        self.power
+    pub fn get_torque(&self) -> f64 {
+        if self.torque_dir { self.torque as f64 } else { -(self.torque as f64) }
     }
     pub fn set_angular_velocity(&mut self, angular_velo: f64) {
-        if angular_velo > 0.0 {
-            self.angular_velo_counterclock = true;
-        }
+        self.angular_velo_counterclock = if angular_velo >= 0.0 { true } else { false };        
         self.angular_velo = ((angular_velo as f32).abs().mul(1000000.0).clamp(0.0, 1000000.0) as u32).to_le_bytes(); // in µrad/step
     }
 }

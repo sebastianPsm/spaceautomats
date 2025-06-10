@@ -1,4 +1,5 @@
-use std::{f64, ops::Mul};
+use core::f64;
+use std::{ops::Mul};
 
 use super::device::Device;
 
@@ -96,7 +97,9 @@ impl Propulsion {
     pub fn set_velocity(&mut self, velocity: (f64, f64), direction: f64) {
         self.velocity_dir = (velocity.0.atan2(velocity.1).mul(1000000.0).clamp(0.0, f64::consts::PI*2.0*1000000.0) as u32).to_le_bytes(); // in µrad
         let velocity = (velocity.0.powi(2) + velocity.1.powi(2)).sqrt();
-        self.velocity_abs = (velocity.clamp(i16::MIN as f64, i16::MAX as f64) as i16).to_le_bytes();        
-        self.heading = (direction.mul(1000000.0).clamp(0.0, f64::consts::PI*2.0*1000000.0) as u32).to_le_bytes(); // in µrad
+        self.velocity_abs = (velocity.clamp(i16::MIN as f64, i16::MAX as f64) as i16).to_le_bytes();
+        
+        let direction = direction.rem_euclid(f64::consts::PI * 2.0).mul(1000000.0);
+        self.heading = (direction as u32).to_le_bytes(); // in µrad
     }
 }

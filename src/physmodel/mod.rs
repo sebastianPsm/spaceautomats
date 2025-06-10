@@ -39,7 +39,7 @@ impl Physmodel {
             let dir: f64 = self.rng.gen_range(-std::f64::consts::PI..std::f64::consts::PI);
 
             automat.ship_hw.object.set_pos((x,y));
-            automat.ship_hw.object.set_dir_rad(dir);
+            automat.ship_hw.object.set_dir(dir);
         });
     }
     pub fn update(&mut self, automats: &mut Vec<Spaceautomat>, plasmas: &mut Vec<Plasma>) {
@@ -87,12 +87,8 @@ impl Physmodel {
             let mut torque: f64 = 0.0;
             if reaction_wheel_enabled {
                 fuel = fuel - 1;
-                let power_value = automat.ship_hw.reaction_wheel.get_power();
-                if power_value > 0 && fuel >= power_value.abs() as u32 {
-                    fuel = fuel - power_value.abs() as u32;
-                    automat.ship_hw.propulsion.set_fuel(fuel);
-                    torque = f64::from(power_value) / 1000.0;
-                }
+                automat.ship_hw.propulsion.set_fuel(fuel);
+                torque = automat.ship_hw.reaction_wheel.get_torque() / 1000.0;
             }
 
             /*
@@ -101,13 +97,13 @@ impl Physmodel {
             if automat.ship_hw.plasmacannon.get_enabled() && (automat.ship_hw.plasmacannon.get_last_shot() + 3) < self.step_count  {
                 automat.ship_hw.plasmacannon.set_last_shot(self.step_count);
                 let mut p = Plasma::new(automat.get_id());
-                let d = automat.ship_hw.object.get_dir_rad() + self.rng.gen_range(-0.2 .. 0.2);
+                let d = automat.ship_hw.object.get_dir() + self.rng.gen_range(-0.2 .. 0.2);
                 let mut s = automat.ship_hw.object.get_speed();
                 s.0 += 10000.0 * d.cos();
                 s.1 += 10000.0 * d.sin();
                 p.object.set_pos(automat.ship_hw.object.get_pos());
                 p.object.set_speed(s);
-                p.object.set_dir_rad(d);
+                p.object.set_dir(d);
                 plasmas.push(p); // spawn new plasma
             }
 
@@ -158,7 +154,7 @@ impl Physmodel {
             }
 
             let (_, dir_new, v_new) = self.kinematics(&mut plasma.object, 0.0, 0.0);
-            plasma.object.set_dir_rad(dir_new);
+            plasma.object.set_dir(dir_new);
             plasma.object.set_speed(v_new);
             plasmas_new.push(plasma.clone());
         }
@@ -169,12 +165,12 @@ impl Physmodel {
 
 fn kinematics(&self, object: &mut Spaceobject, power: f64, torque: f64) -> (f64, f64, (f64, f64)) {
         let alpha: f64 = torque / self.i;
-        let direction_old: f64 = object.get_dir_rad();
-        let angular_velocity_old = object.get_angular_velocity_rad();
+        let direction_old: f64 = object.get_dir();
+        let angular_velocity_old = object.get_angular_velocity();
 
         let angular_velocity_new = angular_velocity_old + alpha*self.t;
         let direction_new = angular_velocity_new * self.t + direction_old;
-println!("{} direction (old/new): ({:.4}/{:.4}), angular_velocity: ({:.4}/{:.4}, alpha: ({:.4}))", self.step_count, direction_old, direction_new, angular_velocity_old, angular_velocity_new, alpha);
+        //println!("{} direction (old/new): ({:.4}/{:.4}), angular_velocity: ({:.4}/{:.4}, alpha: ({:.4}))", self.step_count, direction_old, direction_new, angular_velocity_old, angular_velocity_new, alpha);
         let s = (object.get_pos().0 as f64, object.get_pos().1  as f64);
         let v = object.get_speed();
         let a = (power / self.m * direction_new.cos(), power / self.m * direction_new.sin());
@@ -193,8 +189,8 @@ println!("{} direction (old/new): ({:.4}/{:.4}), angular_velocity: ({:.4}/{:.4},
 
         let velocity_new = (s_new.0 - s.0 / self.t, s_new.1 - s.1 / self.t);
 
-        object.set_angular_velocity_rad(angular_velocity_new);
-        object.set_dir_rad(direction_new);
+        object.set_angular_velocity(angular_velocity_new);
+        object.set_dir(direction_new);
         object.set_speed(velocity_new);
         object.set_pos((s_new.0 as u32, s_new.1 as u32));
 

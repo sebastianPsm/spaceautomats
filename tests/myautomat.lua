@@ -33,14 +33,14 @@ function normRad(val)
 end
 function turn(ship, setpoint)
     processval = read_u32(ship, PROPULSION, 12) / 1E6 -- current heading
-    err = (setpoint - processval) -- heading delta
-	dir = ship:read(REACTION_WHEEL, 2) == 0 and -1 or 1 -- counter clock is positive
-	curr_angular_velocity = dir*read_u32(ship, REACTION_WHEEL, 3) / 1E6  -- angular velocity
+    err = normRad(setpoint - processval) -- heading delta
+    dir = ship:read(REACTION_WHEEL, 2) == 0 and -1 or 1
+	curr_angular_velocity = dir*(read_u32(ship, REACTION_WHEEL, 3) / 1E6)  -- angular velocity
 
-	power = 5 * err + -500 * curr_angular_velocity
-    ship:log(string.format("t: %d, err: %.2f, curr_angular_velocity: %.2f, power: %.0f, processval: %.2f, dir: %d\n", global_t, err, curr_angular_velocity, power, processval, power > 0 and 3 or 1))
-ship:log(string.format("t: %d, : %.4f\n", global_t, power))
-	write_u16(ship, REACTION_WHEEL, 1, power)
+	torque = 5 * err - 500 * curr_angular_velocity
+
+	ship:write(REACTION_WHEEL, 0, torque >= 0 and 3 or 1)
+	write_u16(ship, REACTION_WHEEL, 1, math.abs(torque))
 end
 
 function accelerate(ship, power, thresh)
@@ -104,13 +104,14 @@ function init(ship)
 	ship:slot(PLASMA_CANNON, "plasma cannon")
 
 	ship:write(PROPULSION, 0, 1) -- enable propulsion
-    ship:write(REACTION_WHEEL, 0, 1) -- enable reaction wheel
 
 	ship:write(SCANNER, 0, 0) -- enable scanner
 	ship:write(SCANNER, 1, 127) -- aperture angle (x/255*360)
 	ship:write(SCANNER, 2, 255) -- max. detection distance
 	ship:write(SCANNER, 3, 0) -- heading
 	ship:write(PLASMA_CANNON, 0, 0) -- enable plasma cannon
+
+    ship:log(string.format("time, setpoint, processval, err, torque, curr_angular_velocity\n"))
 end
 
 
@@ -119,22 +120,10 @@ a = 3
 function run(ship)
 	global_t = global_t + 1
 	
-
-	if global_t % 200 == 0 then
-		a = 0
+	if global_t % 300 == 0 then
+		a = math.random() * 10
 	end
 
 	turn(ship, a)
-    
 
-
-    --scan(ship)
-
-	--accelerate(ship, 255, 100)
-	
-
-    if global_t > 100 then
-		--accelerate(ship, 255, 0)
-		--turn(ship, 0, 0)      
-	end	
 end
