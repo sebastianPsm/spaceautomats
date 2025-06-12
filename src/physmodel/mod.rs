@@ -55,7 +55,7 @@ impl Physmodel {
             let mut fuel: u32 = automat.ship_hw.propulsion.get_fuel();
 
             /*
-             * in Scanner (scan before move)
+             * in scanner (scan before move)
              */
             if automat.ship_hw.scanner.get_enabled() {
                 fuel = fuel - 1;

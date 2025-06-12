@@ -32,10 +32,11 @@ function normRad(val)
     return res - math.pi
 end
 function turn(ship, setpoint)
-    processval = read_u32(ship, PROPULSION, 12) / 1E6 -- current heading
-    err = normRad(setpoint - processval) -- heading delta
+    processval = read_u32(ship, PROPULSION, 12) / 1E6
+    err = normRad(setpoint - processval)
+
     dir = ship:read(REACTION_WHEEL, 2) == 0 and -1 or 1
-	curr_angular_velocity = dir*(read_u32(ship, REACTION_WHEEL, 3) / 1E6)  -- angular velocity
+	curr_angular_velocity = dir*(read_u32(ship, REACTION_WHEEL, 3) / 1E6)
 
 	torque = 5 * err - 500 * curr_angular_velocity
 
@@ -105,13 +106,12 @@ function init(ship)
 
 	ship:write(PROPULSION, 0, 1) -- enable propulsion
 
-	ship:write(SCANNER, 0, 0) -- enable scanner
+	ship:write(SCANNER, 0, 1) -- enable scanner
 	ship:write(SCANNER, 1, 127) -- aperture angle (x/255*360)
 	ship:write(SCANNER, 2, 255) -- max. detection distance
 	ship:write(SCANNER, 3, 0) -- heading
-	ship:write(PLASMA_CANNON, 0, 0) -- enable plasma cannon
 
-    ship:log(string.format("time, setpoint, processval, err, torque, curr_angular_velocity\n"))
+	ship:write(PLASMA_CANNON, 0, 0) -- enable plasma cannon
 end
 
 
@@ -120,10 +120,12 @@ a = 3
 function run(ship)
 	global_t = global_t + 1
 	
+	scan(ship)
+	
 	if global_t % 300 == 0 then
 		a = math.random() * 10
 	end
 
-	turn(ship, a)
+	--turn(ship, a)
 
 end
