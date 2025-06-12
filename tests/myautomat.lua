@@ -58,41 +58,26 @@ function accelerate(ship, power, thresh)
     end    
 end
 
-function scan(ship)
-    -- Scan
+function scan(ship) -- provides the relative angle to the closest detection or nil
     nDetections = ship:read(SCANNER, 5) -- get number of detections
     minDistance = 100000000
-    hasAngle = false
-    angle = 0
+    angle = nil
 
     for idx=1,nDetections do
         d = ship:read(SCANNER, 5+idx) -- get detection distance
-        a = ship:read(SCANNER, 6+idx) -- get detection angle (0..255, right to left))
+        angle = ship:read(SCANNER, 6+idx) -- get detection angle (0..255, right to left))
 		if d < minDistance then -- find closest detection
             minDistance = d
-            angle = a
-            hasAngle = true
         end
     end
-    if not hasAngle then
-        return
+    if not angle then
+        return nill
     end
 
     -- Get absolut position of detection
-    aperturAngle = ship:read(SCANNER, 1) / 255 * 360
-    detectionAngle = angle / 255 * aperturAngle
-    detectionAngle = detectionAngle - aperturAngle / 2
-    ship:log(string.format("angle: %.2f, %.2f\n", detectionAngle, aperturAngle))
-    ship:log(string.format("minDistance: %.2f\n", minDistance))
-
-
-    curHead = ship:read(SCANNER, 3, 5) -- get current heading (0..255)
-
-
-    ship:write(SCANNER, 3, 0) -- scanner heading
---	ship:write(SCANNER, 1, 5) -- angle
---		ship:write(SCANNER, 1, 255-t%255) -- aperture angle (x/255*360)
-
+    aperturAngle = ship:read(SCANNER, 1) / 255 * 2 * math.pi
+    detectionAngle = (angle / 255 - 0.5) * aperturAngle
+    return detectionAngle
 end
 
 -- The init()-function is called once before every simulation
@@ -120,12 +105,14 @@ a = 3
 function run(ship)
 	global_t = global_t + 1
 	
-	scan(ship)
-	
-	if global_t % 300 == 0 then
-		a = math.random() * 10
-	end
+	d = scan(ship)
+	ship:write(PLASMA_CANNON, 0, 0) -- reset plasma cannon
+    if d then
+        heading = read_u32(ship, PROPULSION, 12) / 1E6
+        a = heading-d
+		ship:write(PLASMA_CANNON, 0, 1) -- enable plasma cannon
+    end
 
-	--turn(ship, a)
+	turn(ship, a)
 
 end

@@ -48,10 +48,12 @@ impl Physmodel {
          */
         let mut all_positions = Vec::new();
         for automat in automats.iter() {
+            if automat.ship_hw.get_health() == 0 { continue; }
             all_positions.push(automat.ship_hw.object.get_pos());
         }
 
         for automat in automats.iter_mut() {
+            if automat.ship_hw.get_health() == 0 { continue; }
             let mut fuel: u32 = automat.ship_hw.propulsion.get_fuel();
 
             /*

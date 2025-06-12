@@ -59,7 +59,7 @@ impl Ship {
         self.health
     }
     pub fn apply_damage(&mut self, value: u16) {
-        self.health -= value
+        self.health = self.health.saturating_sub(value);
     }
     pub fn add_log_msg(&mut self, msg: &String) {
         self.log.push_str(msg);

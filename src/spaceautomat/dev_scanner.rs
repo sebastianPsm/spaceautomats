@@ -90,10 +90,15 @@ impl Device for Scanner {
             7 | 9 | 11 | 13 | 15 => {
                 let idx = (addr-5) / 2;
                 if detects.len() < idx { return 0; }
-
+                
+                /*
+                 * get_angle_r() provides a rad value between -aperture_angle/2 and +aperture_angle/2
+                 * - first we norm the return value and get a value between -1/2 and +1/2
+                 * - then we add 1/2 to have a value between 0 and 1.
+                 * - finally we multiply this with 255
+                 */
                 let angle_norm = 0.5 + detects[idx-1].get_angle_r() / self.aperture_angle;
                 let angle_norm_u8 = (angle_norm*255.0).ceil() as u8;
-
                 return angle_norm_u8;
             }
             _ => return 0
@@ -120,13 +125,20 @@ impl Scanner {
     pub fn get_detections(&self) -> Vec<Detection> {
         self.detections.clone()
     }
+    fn norm_rad(&self, v: f64) -> f64 {
+        let v = (v+f64::consts::PI).rem_euclid(2.0 * f64::consts::PI);
+        if v < 0.0 {
+            return v + f64::consts::PI;
+        }
+        v - f64::consts::PI
+    }
     pub fn check(&self, ego: &Spaceautomat, all_positions: &Vec<(u32, u32)>) -> Vec<Detection> {
         let ego_pos = ego.ship_hw.object.get_pos();
         let ego_dir = ego.ship_hw.object.get_dir();
         let aperture_angle = ego.ship_hw.scanner.get_aperture_angle();
         let aperture_heading = 2.0*f64::consts::PI + ego.ship_hw.scanner.get_heading();
-        let aperture_angle_1 = aperture_heading - aperture_angle/2.0;
-        let aperture_angle_2 = aperture_angle_1 + aperture_angle;
+        let aperture_angle_1 = self.norm_rad(aperture_heading - aperture_angle/2.0);
+        let aperture_angle_2 = self.norm_rad(aperture_angle_1 + aperture_angle);
 
         let mut result: Vec<Detection> = vec![];
 
@@ -137,12 +149,12 @@ impl Scanner {
             let dy = pos.1 as f64 - ego_pos.1 as f64;
 
             let absolut = (dy.atan2(dx) + 2.0*f64::consts::PI) % (2.0*f64::consts::PI);
-            let relative = ego_dir - absolut;
-            let relative_2pi = relative + 2.0*f64::consts::PI;
+            let relative = self.norm_rad(ego_dir - absolut);
             let distance = (dx.powi(2)+dy.powi(2)).sqrt();
 
             if distance > self.max_detection_distance { continue; }
-            if !(aperture_angle_1 <= relative_2pi && relative_2pi <= aperture_angle_2) { continue; }
+            if !(aperture_angle_1 <= relative && relative <= aperture_angle_2) { continue; }
+            //println!("{} <= {} <= {}", aperture_angle_1, relative, aperture_angle_2);
 
             let mut index = result.len();
             if distance < nearest {
