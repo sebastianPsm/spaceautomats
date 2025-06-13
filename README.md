@@ -66,15 +66,43 @@ A reaction wheel device rotates the ship.
 | 5         | Ang velo | r      | Angular velocity in µrad/step (Bit 16..23)                        |
 | 6         | Ang velo | r      | Angular velocity in µrad/step (Bit 24..31)                        |
 
+#### System example
+
+The following figure shows a controller (cyan) and the controlled system (green).
 
 ![Reaction wheel system](/img/reaction_wheel_system.png)
 
-State space for the reaction wheel system
+State space representation for the controlled system is:
 
-A: [0 -1; 0 0]
-B: [0; 1]
-C: [1 1]
-D: 0
+$A = \begin{bmatrix}0 &1 \\0 &0 \end{bmatrix}$
+$B = \begin{bmatrix}0 \\1/1000\end{bmatrix}$
+$C = \begin{bmatrix}1 &0\end{bmatrix}$
+$D = 0$
+
+Our example controller from the figure above uses a state controller. The parameters was determined by LQR-function from MATLAB.
+
+```matlab
+    >> lqr(A, B, [pi/2 0; 0 0.1], 0.01)
+    ans = 
+        12.5331  158.3549
+```
+
+The lua code would look like the following:
+
+```lua
+function turn(ship, setpoint)
+    processval = read_u32(ship, PROPULSION, 12) / 1E6 -- read heading [µrad]
+    err = normRad(setpoint - processval) -- calc error
+
+    dir = ship:read(REACTION_WHEEL, 2) == 0 and -1 or 1 -- read angular velo dir
+    curr_angular_velocity = dir*(read_u32(ship, REACTION_WHEEL, 3) / 1E6) -- read angular velocity
+
+    torque = 12 * err - 158 * curr_angular_velocity -- controller
+
+    ship:write(REACTION_WHEEL, 0, torque >= 0 and 3 or 1) -- write torque dir
+    write_u16(ship, REACTION_WHEEL, 1, math.abs(torque)) -- write torque
+end
+```
 
 ### Scanner ('scanner')
 
