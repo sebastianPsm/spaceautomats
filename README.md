@@ -74,14 +74,19 @@ The following figure shows a controller (cyan) and the controlled system (green)
 
 State space representation for the controlled system is:
 
-$A = \begin{bmatrix}0 &1 \\0 &0 \end{bmatrix}$
-$B = \begin{bmatrix}0 \\1/1000\end{bmatrix}$
-$C = \begin{bmatrix}1 &0\end{bmatrix}$
+$A = \left\lbrack \matrix{0 & 1 \cr0 & 0} \right\rbrack $
+
+$B = \left\lbrack \matrix{0 \cr 1/1000} \right\rbrack $
+
+$C = \left\lbrack \matrix{1 & 0} \right\rbrack $
+
 $D = 0$
 
 Our example controller from the figure above uses a state controller. The parameters was determined by LQR-function from MATLAB.
 
 ```matlab
+    >> A = [0 1; 0 0];
+    >> B = [0; 1/1000];
     >> lqr(A, B, [pi/2 0; 0 0.1], 0.01)
     ans = 
         12.5331  158.3549
