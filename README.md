@@ -92,6 +92,23 @@ Our example controller from the figure above uses a state controller. The parame
         12.5331  158.3549
 ```
 
+or by LQR-function from the Python Control Systems Library
+
+```python
+# install dependencies with: pip install numpy control
+import numpy as np
+import control as ct
+
+A = np.array([[0,1],[0, 0]])
+B = np.array([[0], [1/1000]])
+
+K, S, E = ct.lqr(A, B, [[3.14159/2, 0], [0, 0.1]], 0.01)
+
+K
+
+# array([[ 12.53313608, 158.35489307]])
+```
+
 The lua code would look like the following:
 
 ```lua
