@@ -62,6 +62,9 @@ impl Simulation {
     }
     /// Calls the init()-function from all automats and initializes the simulation
     pub fn init(&mut self) {
+        // Initialize the physmodel with the automats
+        self.physmodel.init(&mut self.automats);
+
         // Initialize each automat --> calls init()-function from each automat
         let mut id_cnt = 0;
         self.automats.iter_mut().for_each(|ele| { 
@@ -70,9 +73,6 @@ impl Simulation {
             ele.set_id(id_cnt);
             id_cnt += 1;
         });
-
-        // Initialize the physmodel with the automats
-        self.physmodel.init(&mut self.automats);
     }
     /// Counts the initializes automats
     pub fn count_initialized(&self) -> usize {

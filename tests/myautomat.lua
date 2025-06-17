@@ -6,26 +6,9 @@ PLASMA_CANNON = 4
 
 -- Global variables
 global_t = 0
-
-
-__velocity = 0
-__distance = 0
-function forward(ship, setpoint)
-    K = {0.04, 1}
-    
-    err = __distance-setpoint
-   
-	thrust = -K[1] * err -K[2] * __velocity
-    thrust = math.min(math.max(thrust, -255), 255) -- saturate
-    __velocity = __velocity + thrust -- * t (* 1)
-    __distance = __distance + __velocity -- * t (* 1)
-
-	ship:write(PROPULSION, 0, thrust >= 0 and 3 or 1)
-	ship:write(PROPULSION, 1, math.abs(thrust))
-   
-    return err
-end
-
+global_dir0 = 0
+global_dist0 = 0
+-- Common helper functions
 function read_u16(ship, slot, start_address)
     val_1 = ship:read(slot, start_address+0) <<  0 -- low byte
     val_2 = ship:read(slot, start_address+1) <<  8 -- high byte
@@ -49,8 +32,27 @@ function normRad(val)
         res = res + 2 * math.pi
     end
     return res - math.pi
+end
+
+-- Navigation helper
+__distance = 0
+__velocity = 0
+function forward(ship, setpoint)
+    K = {0.04, 1}
+    
+    err = __distance-setpoint
+   
+	thrust = -K[1] * err -K[2] * __velocity
+    thrust = math.min(math.max(thrust, -255), 255) -- saturate
+    __velocity = __velocity + thrust -- * t (* 1)
+    __distance = __distance + __velocity -- * t (* 1)
+
+	ship:write(PROPULSION, 0, thrust >= 0 and 3 or 1)
+	ship:write(PROPULSION, 1, math.abs(thrust))
+   
+    return -err
 end
-function turn(ship, setpoint)
+function turn(ship, setpoint)
     K = {5, 500}
     processval = read_u32(ship, PROPULSION, 12) / 1E6
     err = normRad(processval - setpoint)
@@ -64,9 +66,9 @@ function turn(ship, setpoint)
 	ship:write(REACTION_WHEEL, 0, torque >= 0 and 3 or 1)
 	write_u16(ship, REACTION_WHEEL, 1, math.abs(torque))
 
-	return err
+	return -err
 end
-
+-- Other helper
 function scan(ship) -- provides the relative angle to the closest detection or nil
     nDetections = ship:read(SCANNER, 5) -- get number of detections
     minDistance = 100000000
@@ -106,12 +108,39 @@ function init(ship)
 	ship:write(SCANNER, 3, 0) -- heading
 
 	ship:write(PLASMA_CANNON, 0, 0) -- enable plasma cannon
+
+    global_dir0 = read_u32(ship, PROPULSION, 12) / 1E6
+    global_dist0 = 0
+end
+
+loiter_state = 0
+function loiter(ship, forward_err, turn_error)
+	if loiter_state == 0 then -- go forward (set)
+		ship:log("loiter_state == 0\n")
+        global_dist0 = global_dist0 + 500000
+        loiter_state = 1
+		return
+	end
+	if loiter_state == 1 and forward_err < 100 then -- go forward (wait)
+		ship:log("loiter_state == 1\n")
+        loiter_state = 2
+		return
+	end
+	if loiter_state == 2 then -- turn (set)
+		ship:log("loiter_state == 2\n")
+		global_dir0 = global_dir0 + math.pi/2
+		loiter_state = 3
+		return
+	end
+	if loiter_state == 3 and turn_error < 0.01 then -- turn (wait)
+		ship:log("loiter_state == 3\n")
+		loiter_state = 0
+		return
+	end
 end
 
 
 -- The run()-function is called in every simulation step
-a = 0
-d = 0
 function run(ship)
 	global_t = global_t + 1
 	
@@ -124,12 +153,9 @@ function run(ship)
     --end
 	--turn(ship, a)
 
+    -- navigation
+    forward_err = forward(ship, global_dist0)
+	turn_error = turn(ship, global_dir0)
 
-	if global_t == 1 then
-		a = a + math.pi
-	end
-
-    forward_err = forward(ship, d)
-	turn_error = turn(ship, a)
-
-end
+    loiter(ship, forward_err, turn_error)
+end

@@ -40,6 +40,7 @@ impl Physmodel {
 
             automat.ship_hw.object.set_pos((x,y));
             automat.ship_hw.object.set_dir(dir);
+            automat.ship_hw.propulsion.set_velocity((0.0, 0.0), dir);
         });
     }
     pub fn update(&mut self, automats: &mut Vec<Spaceautomat>, plasmas: &mut Vec<Plasma>) {
