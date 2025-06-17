@@ -69,16 +69,16 @@ impl Physmodel {
              * in propulsion
              */
             let propulsion_enabled = automat.ship_hw.propulsion.get_enabled();
-            let mut power: f64 = 0.0;
+            let mut thrust: f64 = 0.0;
             if propulsion_enabled {
                 fuel = fuel - 1;
-                let power_value = automat.ship_hw.propulsion.get_power();    
-                if power_value > 0 && fuel >= u32::from(power_value) {
-                    fuel = fuel-u32::from(power_value);
+                let thrust_ = automat.ship_hw.propulsion.get_thrust();    
+                if thrust_ > 0 && fuel >= u32::from(thrust_) {
+                    fuel = fuel - u32::from(thrust_);
                     automat.ship_hw.propulsion.set_fuel(fuel);
 
                     let forward = automat.ship_hw.propulsion.get_forward();                    
-                    power = f64::from(power_value) * if forward {1.0} else {-1.0};
+                    thrust = f64::from(thrust_) * if forward {1.0} else {-1.0};
                 }
             }
 
@@ -112,7 +112,7 @@ impl Physmodel {
             /*
              * process kinematics
              */
-            let (angular_velo_new, dir_new, v_new) = self.kinematics(&mut automat.ship_hw.object, power, torque);
+            let (angular_velo_new, dir_new, v_new) = self.kinematics(&mut automat.ship_hw.object, thrust, torque);
             
             /*
              * out reaction wheel
@@ -165,7 +165,7 @@ impl Physmodel {
         self.step_count += 1;
     }
 
-fn kinematics(&self, object: &mut Spaceobject, power: f64, torque: f64) -> (f64, f64, (f64, f64)) {
+fn kinematics(&self, object: &mut Spaceobject, thrust: f64, torque: f64) -> (f64, f64, (f64, f64)) {
         let alpha: f64 = torque / self.i;
         let direction_old: f64 = object.get_dir();
         let angular_velocity_old = object.get_angular_velocity();
@@ -175,7 +175,7 @@ fn kinematics(&self, object: &mut Spaceobject, power: f64, torque: f64) -> (f64,
         //println!("{} direction (old/new): ({:.4}/{:.4}), angular_velocity: ({:.4}/{:.4}, alpha: ({:.4}))", self.step_count, direction_old, direction_new, angular_velocity_old, angular_velocity_new, alpha);
         let s = (object.get_pos().0 as f64, object.get_pos().1  as f64);
         let v = object.get_speed();
-        let a = (power / self.m * direction_new.cos(), power / self.m * direction_new.sin());
+        let a = (thrust / self.m * direction_new.cos(), thrust / self.m * direction_new.sin());
 
         let mut s_new = (s.0 + v.0 * self.t + a.0 * self.t*self.t, 
                                      s.1 + v.1 * self.t + a.1 * self.t*self.t);

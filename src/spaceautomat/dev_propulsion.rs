@@ -8,7 +8,7 @@ pub struct Propulsion {
     enabled: bool,
     forward: bool,
     fuel: u32,
-    power: u8,
+    thrust: u8,
     velocity_abs: [u8; 2],
     velocity_dir: [u8; 4],
     heading: [u8; 4]
@@ -21,7 +21,7 @@ impl Propulsion {
             enabled: false,
             forward: true,
             fuel: 0,
-            power: 0,
+            thrust: 0,
             velocity_abs: [0, 0],
             velocity_dir: [0, 0, 0, 0],
             heading: [0, 0, 0, 0]
@@ -47,7 +47,7 @@ impl Device for Propulsion {
                 self.enabled = (value & 0x01) == 1;
                 self.forward = (value & 0x02) == 2;
             }
-            1 => { self.power = value }
+            1 => { self.thrust = value }
             _ => return
         }
     }
@@ -88,8 +88,8 @@ impl Propulsion {
     pub fn set_fuel(&mut self, value: u32) {
         self.fuel = value;
     }
-    pub fn get_power(&self) -> u8 {
-        self.power
+    pub fn get_thrust(&self) -> u8 {
+        self.thrust
     }
     pub fn get_forward(&self) -> bool {
         self.forward

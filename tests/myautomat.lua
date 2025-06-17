@@ -7,10 +7,34 @@ PLASMA_CANNON = 4
 -- Global variables
 global_t = 0
 
+
+__velocity = 0
+__distance = 0
+function forward(ship, setpoint)
+    K = {0.04, 1}
+    
+    err = __distance-setpoint
+   
+	thrust = -K[1] * err -K[2] * __velocity
+    thrust = math.min(math.max(thrust, -255), 255) -- saturate
+    __velocity = __velocity + thrust -- * t (* 1)
+    __distance = __distance + __velocity -- * t (* 1)
+
+	ship:write(PROPULSION, 0, thrust >= 0 and 3 or 1)
+	ship:write(PROPULSION, 1, math.abs(thrust))
+   
+    return err
+end
+
 function read_u16(ship, slot, start_address)
     val_1 = ship:read(slot, start_address+0) <<  0 -- low byte
     val_2 = ship:read(slot, start_address+1) <<  8 -- high byte
     return val_1 + val_2
+end
+function write_u16(ship, slot, start_address, value)
+    value_ = math.floor(value + 0.5)
+    ship:write(slot, start_address+0, value_ & 0xFF)
+    ship:write(slot, start_address+1, (value_ >> 8) & 0xFF)
 end
 function read_u32(ship, slot, start_address)
     val_1 = ship:read(slot, start_address+0) <<  0 -- low byte
@@ -18,11 +42,6 @@ function read_u32(ship, slot, start_address)
     val_3 = ship:read(slot, start_address+2) << 16
     val_4 = ship:read(slot, start_address+3) << 24 -- high byte
     return val_1 + val_2 + val_3 + val_4
-end
-function write_u16(ship, slot, start_address, value)
-    value_ = math.floor(value + 0.5)
-    ship:write(slot, start_address+0, value_ & 0xFF)
-    ship:write(slot, start_address+1, (value_ >> 8) & 0xFF)
 end
 function normRad(val)
     res = math.fmod(val + math.pi, 2*math.pi)
@@ -32,30 +51,20 @@ function normRad(val)
     return res - math.pi
 end
 function turn(ship, setpoint)
+    K = {5, 500}
     processval = read_u32(ship, PROPULSION, 12) / 1E6
-    err = normRad(setpoint - processval)
+    err = normRad(processval - setpoint)
 
     dir = ship:read(REACTION_WHEEL, 2) == 0 and -1 or 1
-	curr_angular_velocity = dir*(read_u32(ship, REACTION_WHEEL, 3) / 1E6)
+	angular_velocity = dir*(read_u32(ship, REACTION_WHEEL, 3) / 1E6)
 
-	torque = 5 * err - 500 * curr_angular_velocity
+    torque = -K[1] * err -K[2] * angular_velocity
+    torque = math.min(math.max(torque, -255), 255) -- saturate
 
 	ship:write(REACTION_WHEEL, 0, torque >= 0 and 3 or 1)
 	write_u16(ship, REACTION_WHEEL, 1, math.abs(torque))
-end
 
-function accelerate(ship, power, thresh)
-    velo = read_u16(ship, PROPULSION, 6) -- current velocity
-
-    ship:write(PROPULSION, 0, 0) -- diable propulsion
-    ship:write(PROPULSION, 1, 0) -- propulsion power
-    if velo < thresh then
-        ship:write(PROPULSION, 0, 3) -- enable propulsion, forward
-        ship:write(PROPULSION, 1, power) -- propulsion power
-    elseif velo > thresh then
-        ship:write(PROPULSION, 0, 1) -- enable propulsion, backward
-        ship:write(PROPULSION, 1, power) -- propulsion power
-    end    
+	return err
 end
 
 function scan(ship) -- provides the relative angle to the closest detection or nil
@@ -101,18 +110,26 @@ end
 
 
 -- The run()-function is called in every simulation step
-a = 3
+a = 0
+d = 0
 function run(ship)
 	global_t = global_t + 1
 	
-	d = scan(ship)
-	ship:write(PLASMA_CANNON, 0, 0) -- reset plasma cannon
-    if d then
-        heading = read_u32(ship, PROPULSION, 12) / 1E6
-        a = heading-d
-		ship:write(PLASMA_CANNON, 0, 1) -- enable plasma cannon
-    end
+	--d = scan(ship)
+	--ship:write(PLASMA_CANNON, 0, 0) -- reset plasma cannon
+    --if d then
+    --    heading = read_u32(ship, PROPULSION, 12) / 1E6
+    --    a = heading-d
+	--	ship:write(PLASMA_CANNON, 0, 1) -- enable plasma cannon
+    --end
+	--turn(ship, a)
 
-	turn(ship, a)
+
+	if global_t == 1 then
+		a = a + math.pi
+	end
+
+    forward_err = forward(ship, d)
+	turn_error = turn(ship, a)
 
 end
