@@ -1,7 +1,8 @@
 pub(crate) mod spaceobject;
 
 use rand::prelude::*;
-use rand_chacha::ChaCha8Rng;
+use rand::rngs::SmallRng;
+
 use spaceobject::Spaceobject;
 
 use crate::{plasma::Plasma, spaceautomat::Spaceautomat};
@@ -10,19 +11,19 @@ pub struct Physmodel {
     step_count: u64,
     width: u32,
     height: u32,
-    rng: ChaCha8Rng,
+    rng: SmallRng,
     t: f64,
     m: f64,
     i: f64, // Inertialmoment
 }
 
 impl Physmodel {
-    pub fn new(width: u32, height: u32, seed: u64) -> Physmodel {
+    pub fn new() -> Physmodel {
         Physmodel {
             step_count: 0,
-            width: width,
-            height: height,
-            rng: ChaCha8Rng::seed_from_u64(seed),
+            width: 0,
+            height: 0,
+            rng: SmallRng::seed_from_u64(0),
             t: 1.0,
             m: 1.0,
             i: 1.0,
@@ -32,11 +33,15 @@ impl Physmodel {
     pub fn get_dim(&self) -> (u32, u32) {
         (self.width, self.height)
     }
-    pub fn init(&mut self, automats: &mut Vec<Spaceautomat>) {
+    pub fn init(&mut self, arena_width: u32, arena_height: u32, seed: u64, automats: &mut Vec<Spaceautomat>) {
+        self.width = arena_width;
+        self.height = arena_height;
+        self.rng = SmallRng::seed_from_u64(seed);
+
         automats.iter_mut().for_each(|automat| {
-            let x = self.rng.gen_range(0..self.width/4)+self.width/2;
-            let y = self.rng.gen_range(0..self.height/4)+self.height/2;
-            let dir: f64 = self.rng.gen_range(-std::f64::consts::PI..std::f64::consts::PI);
+            let x = self.rng.random_range(0..self.width/4)+self.width/2;
+            let y = self.rng.random_range(0..self.height/4)+self.height/2;
+            let dir: f64 = self.rng.random_range(-std::f64::consts::PI..std::f64::consts::PI);
 
             automat.ship_hw.object.set_pos((x,y));
             automat.ship_hw.object.set_dir(dir);
@@ -100,7 +105,7 @@ impl Physmodel {
             if automat.ship_hw.plasmacannon.get_enabled() && (automat.ship_hw.plasmacannon.get_last_shot() + 3) < self.step_count  {
                 automat.ship_hw.plasmacannon.set_last_shot(self.step_count);
                 let mut p = Plasma::new(automat.get_id());
-                let d = automat.ship_hw.object.get_dir() + self.rng.gen_range(-0.2 .. 0.2);
+                let d = automat.ship_hw.object.get_dir() + self.rng.random_range(-0.2 .. 0.2);
                 let mut s = automat.ship_hw.object.get_speed();
                 s.0 += 10000.0 * d.cos();
                 s.1 += 10000.0 * d.sin();

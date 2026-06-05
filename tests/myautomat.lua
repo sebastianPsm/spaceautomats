@@ -32,12 +32,12 @@ function normRad(val)
         res = res + 2 * math.pi
     end
     return res - math.pi
-end
+end
 
 -- Navigation helper
 __distance = 0
 __velocity = 0
-function forward(ship, setpoint)
+function forward(ship, setpoint)
     K = {0.04, 1}
     
     err = __distance-setpoint
@@ -158,4 +158,4 @@ function run(ship)
 	turn_error = turn(ship, global_dir0)
 
     loiter(ship, forward_err, turn_error)
-end
+end

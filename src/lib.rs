@@ -16,11 +16,11 @@ pub struct Simulation {
 }
 
 impl Simulation {
-    pub fn new(x: u32, y: u32, seed: u64) -> Simulation {
+    pub fn new() -> Simulation {
         Simulation {
             automats: Vec::new(),
             plasmas: Vec::new(),
-            physmodel: Physmodel::new(x, y, seed)
+            physmodel: Physmodel::new()
         }
     }
     pub fn load_automat_by_file(&mut self, file_path: &PathBuf) {
@@ -61,9 +61,9 @@ impl Simulation {
         &self.physmodel
     }
     /// Calls the init()-function from all automats and initializes the simulation
-    pub fn init(&mut self) {
+    pub fn init(&mut self, arena_width: u32, arena_height: u32, seed: u64) {
         // Initialize the physmodel with the automats
-        self.physmodel.init(&mut self.automats);
+        self.physmodel.init(arena_width, arena_height, seed, &mut self.automats);
 
         // Initialize each automat --> calls init()-function from each automat
         let mut id_cnt = 0;

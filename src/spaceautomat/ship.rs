@@ -69,7 +69,7 @@ impl Ship {
     }
 }
 impl UserData for Ship {
-    fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
+    fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
         methods.add_method_mut("name", |_, ship, name: String| {
             ship.set_name(&name);
             Ok(())

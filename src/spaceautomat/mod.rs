@@ -5,7 +5,7 @@ mod dev_reaction_wheel;
 mod dev_scanner;
 mod dev_plasmacannon;
 
-use mlua::{Function, Lua, LuaOptions, StdLib};
+use mlua::{Error, Function, Lua, LuaOptions, StdLib};
 use crate::spaceautomat::ship::Ship;
 
 #[derive(Debug, Clone)]
@@ -63,8 +63,8 @@ impl Spaceautomat {
          * Check first init() and run()
          */
         let globals = self.lua.globals();
-        let init_fcn = globals.get::<_, Function>("init");
-        let run_fcn = globals.get::<_, Function>("run");
+        let init_fcn: Result<Function, Error> = globals.get("init");
+        let run_fcn: Result<Function, Error> = globals.get("run");
         
         if init_fcn.is_err() {
             return ReturnCode::InitFcnMissing;
@@ -79,8 +79,8 @@ impl Spaceautomat {
     pub fn init(&mut self) -> ReturnCode {
         let result = self.lua.scope(|scope| {
             let ship_userdata = scope.create_userdata_ref_mut(&mut self.ship_hw).unwrap();
-            let init_fcn = self.lua.globals().get::<_, Function>("init").unwrap();
-            let res = init_fcn.call::<_, bool>(ship_userdata);
+            let init_fcn: Function = self.lua.globals().get("init").unwrap();
+            let res = init_fcn.call::<bool>(ship_userdata);
             return res;
         });
         if result.is_err() {
@@ -104,8 +104,8 @@ impl Spaceautomat {
         // Do a automat simulation step to update the control states
         let result = self.lua.scope(|scope| {
             let ship_userdata = scope.create_userdata_ref_mut(&mut self.ship_hw).unwrap();
-            let run_fcn = self.lua.globals().get::<_, Function>("run").unwrap();
-            let res = run_fcn.call::<_, bool>(ship_userdata);
+            let run_fcn: Function = self.lua.globals().get("run").unwrap();
+            let res = run_fcn.call::<bool>(ship_userdata);
             return res;
         });
         match result {
