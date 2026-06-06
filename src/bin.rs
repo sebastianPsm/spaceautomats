@@ -85,6 +85,12 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     KeyCode::Char('q') => {
                         return Ok(true);
                     }
+                    KeyCode::Tab => {
+                        match app.selected_box {
+                            app::SelectedBox::Automats => { app.selected_box = app::SelectedBox::Log; }
+                            app::SelectedBox::Log => { app.selected_box = app::SelectedBox::Automats; }
+                        }
+                    }
                     KeyCode::Up => {
                         app.selected_automat = app.selected_automat.saturating_sub(1)
                     }

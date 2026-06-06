@@ -1,9 +1,12 @@
 use ratatui::{
     Frame, layout::{Constraint, Direction, Layout, Margin}, style::{Color, Modifier, Style}, symbols::Marker, text::Text, widgets::{Block, List, ListState, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, canvas::{Canvas, Circle, Line, Rectangle}}
 };
-use crate::app::App;
+use crate::app::{App, SelectedBox};
 
 pub fn ui(frame: &mut Frame, app: &App) {
+    let box_style_normal = Style::new();
+    let box_style_selected = Style::new().green();
+
     /*
      * Main horizontal layout
      */
@@ -40,14 +43,14 @@ pub fn ui(frame: &mut Frame, app: &App) {
     let items: Vec<String> = app.sim.get_automats().into_iter().map(|automat| {
          format!("{} (💜 {}) (🔋 {})", automat.ship_hw.get_name(), automat.ship_hw.get_health(), automat.ship_hw.propulsion.get_fuel())
     }).collect();
-    let list = List::new(items)
+    let automats_list = List::new(items)
         .style(Color::White)
         .highlight_style(Modifier::REVERSED)
         .highlight_symbol("> ")
-        .block(Block::bordered());
+        .block(Block::bordered().border_style(if app.selected_box == SelectedBox::Automats { box_style_selected } else { box_style_normal }));
 
     let mut state = ListState::default().with_selected(Some(app.selected_automat));
-    frame.render_stateful_widget(list, gameplay[0], &mut state);
+    frame.render_stateful_widget(automats_list, gameplay[0], &mut state);
 
     let canvas = Canvas::default()
         .marker(Marker::Braille)
@@ -100,24 +103,20 @@ pub fn ui(frame: &mut Frame, app: &App) {
     let selected_log = selected_automat.ship_hw.get_log();
     let nlogs = selected_log.split("\n").count();
 
-    let vertical_scroll = 0; // from app state
+    let vertical_scroll = nlogs.saturating_sub(10); // from app state
     let scrollbar = Scrollbar::new(ScrollbarOrientation::VerticalRight)
         .begin_symbol(Some("↑"))
         .end_symbol(Some("↓"));
     let log = Paragraph::new(selected_log)
-        .block(Block::bordered().title(format!("Log {}", selected_automat.ship_hw.get_name())))
+        .block(Block::bordered().border_style(if app.selected_box == SelectedBox::Log { box_style_selected } else { box_style_normal })
+        .title(format!("Log {}", selected_automat.ship_hw.get_name())))
         .scroll((vertical_scroll as u16, 0));
     let mut scrollbar_state = ScrollbarState::new(nlogs).position(vertical_scroll);
 
     frame.render_widget(log, chunks[2]);
-    frame.render_stateful_widget(
-    scrollbar,
-    chunks[2].inner(Margin {
-        // using an inner vertical margin of 1 unit makes the scrollbar inside the block
-        vertical: 1,
-        horizontal: 0,
-    }),
-    &mut scrollbar_state,
-);
-    
+    frame.render_stateful_widget(scrollbar,chunks[2]
+        .inner(Margin {
+            vertical: 1, // using an inner vertical margin of 1 unit makes the scrollbar inside the block
+            horizontal: 0,
+        }), &mut scrollbar_state);
 }

@@ -2,6 +2,12 @@ use std::{fs, path::Path};
 
 use spaceautomats::Simulation;
 
+#[derive(PartialEq)]
+pub enum  SelectedBox{
+    Automats,
+    Log
+}
+
 pub struct Arguments {
     pub verbose: bool,
     pub ui: bool,
@@ -17,7 +23,8 @@ pub struct App {
     pub sim: Simulation,   
 
     // Ui
-    pub selected_automat: usize, 
+    pub selected_automat: usize,
+    pub selected_box: SelectedBox,
 }
 
 impl App {
@@ -27,6 +34,7 @@ impl App {
             sim: Simulation::new(),            
             
             selected_automat: 0,
+            selected_box: SelectedBox::Automats,
         }
     }
     pub fn is_ui(&self) -> bool {
